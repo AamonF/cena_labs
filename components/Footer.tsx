@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { site } from "@/data/site";
 import { getAllApps } from "@/data/apps";
+import { unfumbledLegalRoutes } from "@/data/legal/unfumbled-global";
 
 export function Footer() {
   const apps = getAllApps();
@@ -85,42 +86,15 @@ export function Footer() {
                   <div className="flex flex-col gap-2">
                     {app.slug === "unfumbled" ? (
                       <>
-                        <Link
-                          href="/terms"
-                          className="text-[13px] text-mid transition-colors hover:text-hi"
-                        >
-                          Terms of Service
-                        </Link>
-                        <Link
-                          href="/privacy"
-                          className="text-[13px] text-mid transition-colors hover:text-hi"
-                        >
-                          Privacy Policy
-                        </Link>
-                        <Link
-                          href="/disclaimer"
-                          className="text-[13px] text-mid transition-colors hover:text-hi"
-                        >
-                          AI Disclaimer
-                        </Link>
-                        <Link
-                          href="/contact"
-                          className="text-[13px] text-mid transition-colors hover:text-hi"
-                        >
-                          Contact
-                        </Link>
-                        <Link
-                          href="/cookies"
-                          className="text-[13px] text-mid transition-colors hover:text-hi"
-                        >
-                          Cookie Policy
-                        </Link>
-                        <Link
-                          href="/acceptable-use"
-                          className="text-[13px] text-mid transition-colors hover:text-hi"
-                        >
-                          Acceptable Use
-                        </Link>
+                        {unfumbledLegalRoutes.map((r) => (
+                          <Link
+                            key={r.href}
+                            href={r.href}
+                            className="text-[13px] text-mid transition-colors hover:text-hi"
+                          >
+                            {r.label}
+                          </Link>
+                        ))}
                       </>
                     ) : (
                       <>
