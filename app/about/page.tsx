@@ -2,16 +2,21 @@ import type { Metadata } from "next";
 import { Section } from "@/components/Section";
 import { Button } from "@/components/Button";
 import { site } from "@/data/site";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "About",
-  description: `About ${site.name} — ${site.tagline}`,
-  openGraph: {
-    title: `About — ${site.name}`,
-    description: `About ${site.name} — ${site.tagline}`,
-    url: `${site.url}/about`,
-  },
-};
+export const metadata: Metadata = buildMetadata({
+  title: `About ${site.name} — Independent AI App Studio`,
+  description: `${site.name} is an independent app studio building focused AI, productivity, and communication apps for iOS, Android, and the web — without investors, dark patterns, or tracking for its own sake.`,
+  path: "/about",
+  keywords: [
+    `${site.name} about`,
+    "indie app studio",
+    "AI app studio",
+    "independent software",
+    "privacy-first apps",
+  ],
+  absoluteTitle: true,
+});
 
 export default function AboutPage() {
   return (

@@ -1,18 +1,24 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Section } from "@/components/Section";
+import { JsonLd } from "@/components/JsonLd";
 import { getAllApps } from "@/data/apps";
 import { site } from "@/data/site";
+import { buildMetadata } from "@/lib/seo";
+import { faqSchema } from "@/lib/schema";
 
-export const metadata: Metadata = {
-  title: "Support",
-  description: `Get help with any app from ${site.name}.`,
-  openGraph: {
-    title: `Support — ${site.name}`,
-    description: `Get help with any app from ${site.name}.`,
-    url: `${site.url}/support`,
-  },
-};
+export const metadata: Metadata = buildMetadata({
+  title: `Support — ${site.name}`,
+  description: `Get help with Unfumbled or any other ${site.name} app. Email ${site.supportEmail} and a real person replies — typically within 24–72 hours.`,
+  path: "/support",
+  keywords: [
+    `${site.name} support`,
+    "Unfumbled support",
+    "AI app help",
+    "contact app studio",
+  ],
+  absoluteTitle: true,
+});
 
 export default function SupportPage() {
   const apps = getAllApps();
@@ -117,6 +123,8 @@ export default function SupportPage() {
           ))}
         </div>
       </Section>
+
+      <JsonLd data={faqSchema(faq)} />
     </>
   );
 }

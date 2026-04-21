@@ -5,22 +5,16 @@ import {
   UNFUMBLED_LEGAL_LAST_UPDATED,
   unfumbledTerms,
 } from "@/data/legal/unfumbled-global";
-import { site } from "@/data/site";
+import { buildMetadata } from "@/lib/seo";
 
 const path = "/terms";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildMetadata({
   title: "Terms of Service",
   description:
-    "Terms of Service for Unfumbled and Cena Labs — accounts, subscriptions, AI disclaimers, and acceptable use.",
-  alternates: { canonical: `${site.url}${path}` },
-  openGraph: {
-    title: "Terms of Service — Cena Labs",
-    description:
-      "Terms of Service for Unfumbled and related services operated by Cena Labs.",
-    url: `${site.url}${path}`,
-  },
-};
+    "Terms of Service for Unfumbled and Cena Labs — accounts, subscriptions, AI disclaimers, acceptable use, and how the agreement works.",
+  path,
+});
 
 export default function TermsPage() {
   return (

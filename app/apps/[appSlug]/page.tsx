@@ -1,8 +1,14 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { AppPage } from "@/components/AppPage";
+import { JsonLd } from "@/components/JsonLd";
 import { getAllApps, getAppBySlug } from "@/data/apps";
-import { site } from "@/data/site";
+import { buildAppMetadata } from "@/lib/seo";
+import {
+  breadcrumbSchema,
+  faqSchema,
+  softwareApplicationSchema,
+} from "@/lib/schema";
 
 type Params = { appSlug: string };
 
@@ -11,33 +17,12 @@ export function generateStaticParams(): Params[] {
 }
 
 export async function generateMetadata(
-  { params }: { params: Promise<Params> }
+  { params }: { params: Promise<Params> },
 ): Promise<Metadata> {
   const { appSlug } = await params;
   const app = getAppBySlug(appSlug);
   if (!app) return {};
-
-  const title = `${app.name} — ${app.tagline}`;
-  const description = app.summary;
-  const url = `${site.url}/apps/${app.slug}`;
-
-  return {
-    title: app.name,
-    description,
-    alternates: { canonical: url },
-    openGraph: {
-      title,
-      description,
-      url,
-      type: "website",
-      siteName: site.name,
-    },
-    twitter: {
-      card: "summary_large_image",
-      title,
-      description,
-    },
-  };
+  return buildAppMetadata(app);
 }
 
 export default async function AppDetailPage({
@@ -49,5 +34,22 @@ export default async function AppDetailPage({
   const app = getAppBySlug(appSlug);
   if (!app) notFound();
 
-  return <AppPage app={app} />;
+  const schemas: object[] = [
+    softwareApplicationSchema(app),
+    breadcrumbSchema([
+      { name: "Home", path: "/" },
+      { name: "Apps", path: "/apps" },
+      { name: app.name, path: `/apps/${app.slug}` },
+    ]),
+  ];
+  if (app.faq && app.faq.length > 0) {
+    schemas.push(faqSchema(app.faq));
+  }
+
+  return (
+    <>
+      <AppPage app={app} />
+      <JsonLd data={schemas} />
+    </>
+  );
 }

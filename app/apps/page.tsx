@@ -1,20 +1,47 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { AppCard } from "@/components/AppCard";
+import { JsonLd } from "@/components/JsonLd";
 import { getAllApps } from "@/data/apps";
 import { site } from "@/data/site";
+import { buildMetadata, absoluteUrl } from "@/lib/seo";
+import { breadcrumbSchema, softwareApplicationSchema } from "@/lib/schema";
 
-export const metadata: Metadata = {
-  title: "Apps",
-  description: `The full portfolio of apps made by ${site.name}.`,
-  openGraph: {
-    title: `Apps — ${site.name}`,
-    description: `The full portfolio of apps made by ${site.name}.`,
-    url: `${site.url}/apps`,
-  },
-};
+export const metadata: Metadata = buildMetadata({
+  title: "All Apps by Cena Labs — AI, Productivity & Lifestyle",
+  description:
+    "Browse every app from Cena Labs — focused AI, productivity, and lifestyle tools for iOS and Android, including Unfumbled, our AI texting assistant.",
+  path: "/apps",
+  keywords: [
+    "Cena Labs apps",
+    "AI apps",
+    "productivity apps",
+    "iOS apps",
+    "Android apps",
+    "Unfumbled",
+    "AI texting assistant",
+  ],
+  absoluteTitle: true,
+});
 
 export default function AppsIndexPage() {
   const apps = getAllApps();
+
+  const schemas = [
+    breadcrumbSchema([
+      { name: "Home", path: "/" },
+      { name: "Apps", path: "/apps" },
+    ]),
+    {
+      "@context": "https://schema.org",
+      "@type": "CollectionPage",
+      "@id": `${absoluteUrl("/apps")}#collection`,
+      name: `Apps by ${site.name}`,
+      description: `The full portfolio of apps made by ${site.name}.`,
+      url: absoluteUrl("/apps"),
+      hasPart: apps.map((app) => softwareApplicationSchema(app)),
+    } as const,
+  ];
 
   return (
     <>
@@ -35,13 +62,14 @@ export default function AppsIndexPage() {
               Portfolio
             </p>
             <h1 className="text-balance text-4xl font-semibold tracking-[-0.04em] text-hi sm:text-6xl sm:leading-[1.04]">
-              Every app from the studio.
+              Every app from {site.name}.
             </h1>
             <p className="mt-5 text-pretty text-[17px] leading-relaxed text-mid">
               {apps.length === 1
-                ? "One app right now"
-                : `${apps.length} apps right now`}{" "}
-              — more in the making.
+                ? "One live app right now"
+                : `${apps.length} live apps right now`}{" "}
+              — focused AI and productivity tools for iOS, Android, and the
+              web. More in the making.
             </p>
           </div>
         </div>
@@ -49,6 +77,7 @@ export default function AppsIndexPage() {
 
       {/* Grid */}
       <section className="container-page py-16 sm:py-20">
+        <h2 className="sr-only">Apps</h2>
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {apps.map((app) => (
             <AppCard key={app.slug} app={app} />
@@ -69,7 +98,21 @@ export default function AppsIndexPage() {
             </div>
           </div>
         </div>
+
+        <p className="mt-12 max-w-2xl text-[14px] leading-relaxed text-mid">
+          Looking for something specific? Read more about{" "}
+          <Link href="/about" className="text-hi underline underline-offset-4 decoration-white/20 hover:decoration-white/50">
+            how we build software
+          </Link>{" "}
+          or{" "}
+          <Link href="/support" className="text-hi underline underline-offset-4 decoration-white/20 hover:decoration-white/50">
+            get in touch
+          </Link>
+          .
+        </p>
       </section>
+
+      <JsonLd data={schemas} />
     </>
   );
 }

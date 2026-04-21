@@ -131,6 +131,102 @@ export const unfumbled: App = {
   ctaBody:
     "Unfumbled is built for fast feedback—try the free tier, paste or upload a real thread, and walk away with scores, fixes, and copy-ready lines.",
 
+  seo: {
+    title: "Unfumbled — AI Texting Assistant for Dating & DMs",
+    description:
+      "Unfumbled is an AI texting assistant that reads your dating chats, scores the vibe, flags mistakes, and suggests what to say next. Paste text or upload screenshots — free to try on iOS and Android.",
+    keywords: [
+      "AI texting assistant",
+      "AI dating assistant",
+      "text conversation help app",
+      "what to text her",
+      "what to reply",
+      "dating chat analyzer",
+      "screenshot chat analyzer",
+      "AI dating coach app",
+      "how to stop getting ghosted",
+      "iMessage AI reply",
+      "Instagram DM helper",
+      "Snapchat texting help",
+      "Unfumbled app",
+    ],
+    ogImage: "/images/unfumbled-screen-home.png",
+  },
+
+  howItWorks: [
+    {
+      title: "1. Paste a chat or upload screenshots",
+      description:
+        "Drop in a conversation from iMessage, Instagram DMs, Snapchat, or anywhere else. Screenshot parsing reads blue and grey bubbles so you do not have to retype a single message.",
+    },
+    {
+      title: "2. Get a full read on the vibe",
+      description:
+        "Unfumbled returns an Interest Score, Ghost Risk, Power Balance, and a short vibe summary — so you know whether the other person is actually into it, losing interest, or waiting for you to make a move.",
+    },
+    {
+      title: "3. See your mistakes and the best next move",
+      description:
+        "The analysis highlights what is working and what is hurting you — dry replies, over-texting, missed escalation, bad timing — and then hands you the Best Next Move for the thread.",
+    },
+    {
+      title: "4. Copy a suggested reply and send",
+      description:
+        "Get three to five short, natural replies in tones like confident, playful, flirty, or chill. Copy the one that sounds like you, send it, and track how the chat moves from there.",
+    },
+  ],
+
+  mistakes: [
+    {
+      heading: "Being too dry",
+      body:
+        "One-word answers kill momentum. Unfumbled spots low-effort replies and suggests higher-effort alternatives that still sound like you — not a motivational poster.",
+    },
+    {
+      heading: "Over-texting and double-sending",
+      body:
+        "Multiple messages in a row without a response flips the power balance. The app flags when you are chasing and recommends pacing so you stop burying the thread.",
+    },
+    {
+      heading: "Missing green-light signals",
+      body:
+        "If they are asking questions, bringing up shared plans, or using playful language, that is an opening to escalate. Unfumbled surfaces those cues and suggests natural next moves — including when to ask someone out.",
+    },
+    {
+      heading: "Escalating too fast",
+      body:
+        "Jumping from hi to meet up in 3 messages is a common ghost trigger. The scoring layer tracks warmth and momentum so you can read the actual temperature of the chat instead of guessing.",
+    },
+    {
+      heading: "Responding out of anxiety",
+      body:
+        "Typing a reply just to fill silence is how threads go off the rails. Unfumbled gives you a second opinion in seconds so you can send intentionally, not emotionally.",
+    },
+  ],
+
+  tips: [
+    {
+      heading: "Match their energy, then raise it slightly",
+      body:
+        "If their replies are short, do not write essays — but add one specific callback or playful question. Unfumbled's suggested replies are tuned to do this without feeling forced.",
+    },
+    {
+      heading: "Ask specific questions, not generic ones",
+      body:
+        "How was your day is a dead end. Specific, personal, or context-aware questions get real answers. Use the Key Insight section to see what the thread is actually missing.",
+    },
+    {
+      heading: "Close loops with a concrete plan",
+      body:
+        "Once the vibe is good, suggest a time and place — not just let's hang out sometime. The Best Next Move tells you when a thread is ready for that ask.",
+    },
+    {
+      heading: "Save your chats and watch your scores improve",
+      body:
+        "Pattern recognition is where most people plateau. Saving analyses (locally or via Supabase sync) turns texting into something you can actually get better at.",
+    },
+  ],
+
   faq: [
     {
       q: "What does Unfumbled do?",
@@ -165,6 +261,11 @@ export const unfumbled: App = {
       a: "The product is intended for adults. If you are under 18, please do not use the App.",
     },
   ],
+
+  legalCanonicalPaths: {
+    privacy: "/privacy",
+    terms:   "/terms",
+  },
 
   privacy: unfumbledPrivacy,
 

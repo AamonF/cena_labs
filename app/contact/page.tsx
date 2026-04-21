@@ -1,19 +1,16 @@
 import type { Metadata } from "next";
 import { UnfumbledLegalShell } from "@/components/UnfumbledLegalShell";
 import { site } from "@/data/site";
+import { buildMetadata } from "@/lib/seo";
 
 const path = "/contact";
 
-export const metadata: Metadata = {
-  title: "Contact",
-  description:
-    "Contact Cena Labs for Unfumbled support (support@cenalabs.com) or business inquiries (info@cenalabs.com).",
-  alternates: { canonical: `${site.url}${path}` },
-  openGraph: {
-    title: "Contact — Cena Labs",
-    url: `${site.url}${path}`,
-  },
-};
+export const metadata: Metadata = buildMetadata({
+  title: "Contact Cena Labs",
+  description: `Contact ${site.name} — Unfumbled support at ${site.supportEmail} or business inquiries at ${site.email}. Typical response time is 24–72 hours.`,
+  path,
+  absoluteTitle: true,
+});
 
 export default function ContactPage() {
   return (
@@ -33,7 +30,7 @@ export default function ContactPage() {
           <span className="font-medium text-hi">Business:</span>{" "}
           <a href={`mailto:${site.email}`}>{site.email}</a>
         </p>
-        <p>Typical response time: 24–72 hours</p>
+        <p>Typical response time: 24–72 hours.</p>
       </article>
     </UnfumbledLegalShell>
   );

@@ -5,22 +5,16 @@ import {
   UNFUMBLED_LEGAL_LAST_UPDATED,
   unfumbledPrivacy,
 } from "@/data/legal/unfumbled-global";
-import { site } from "@/data/site";
+import { buildMetadata } from "@/lib/seo";
 
 const path = "/privacy";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildMetadata({
   title: "Privacy Policy",
   description:
-    "How Cena Labs collects, uses, and protects information for Unfumbled — local storage, AI processing, and third parties.",
-  alternates: { canonical: `${site.url}${path}` },
-  openGraph: {
-    title: "Privacy Policy — Cena Labs",
-    description:
-      "Privacy practices for Unfumbled: local conversations, Supabase, OpenAI, and RevenueCat.",
-    url: `${site.url}${path}`,
-  },
-};
+    "How Cena Labs collects, uses, and protects information for Unfumbled — covering local on-device storage, AI processing, Supabase, OpenAI, and third-party services.",
+  path,
+});
 
 export default function PrivacyPage() {
   return (

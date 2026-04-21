@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { LegalPage } from "@/components/LegalPage";
+import { JsonLd } from "@/components/JsonLd";
 import { getAllApps, getAppBySlug } from "@/data/apps";
-import { site } from "@/data/site";
+import { buildAppLegalMetadata } from "@/lib/seo";
+import { breadcrumbSchema } from "@/lib/schema";
 
 type Params = { appSlug: string };
 
@@ -11,22 +13,12 @@ export function generateStaticParams(): Params[] {
 }
 
 export async function generateMetadata(
-  { params }: { params: Promise<Params> }
+  { params }: { params: Promise<Params> },
 ): Promise<Metadata> {
   const { appSlug } = await params;
   const app = getAppBySlug(appSlug);
   if (!app) return {};
-
-  const title = `${app.name} Privacy Policy`;
-  const description = `The Privacy Policy for ${app.name}, an app by ${site.name}.`;
-  const url = `${site.url}/apps/${app.slug}/privacy`;
-
-  return {
-    title,
-    description,
-    alternates: { canonical: url },
-    openGraph: { title, description, url },
-  };
+  return buildAppLegalMetadata(app, "privacy");
 }
 
 export default async function AppPrivacyPage({
@@ -38,5 +30,17 @@ export default async function AppPrivacyPage({
   const app = getAppBySlug(appSlug);
   if (!app) notFound();
 
-  return <LegalPage app={app} kind="privacy" document={app.privacy} />;
+  return (
+    <>
+      <LegalPage app={app} kind="privacy" document={app.privacy} />
+      <JsonLd
+        data={breadcrumbSchema([
+          { name: "Home",          path: "/" },
+          { name: "Apps",          path: "/apps" },
+          { name: app.name,        path: `/apps/${app.slug}` },
+          { name: "Privacy Policy", path: `/apps/${app.slug}/privacy` },
+        ])}
+      />
+    </>
+  );
 }

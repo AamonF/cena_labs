@@ -1,9 +1,30 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { AppCard } from "@/components/AppCard";
 import { Button } from "@/components/Button";
 import { Section } from "@/components/Section";
 import { getAllApps, getFeaturedApp } from "@/data/apps";
 import { site } from "@/data/site";
+import { buildMetadata } from "@/lib/seo";
+
+export const metadata: Metadata = buildMetadata({
+  title: `${site.name} — AI & Productivity Apps, Built With Care`,
+  description:
+    "Cena Labs is an independent app studio building focused AI, productivity, and communication apps for iOS, Android, and the web — starting with Unfumbled, an AI texting assistant.",
+  path: "/",
+  keywords: [
+    "app studio",
+    "indie app studio",
+    "AI apps",
+    "productivity apps",
+    "iOS app studio",
+    "Android app studio",
+    "Unfumbled",
+    "AI texting assistant",
+    "Cena Labs",
+  ],
+  absoluteTitle: true,
+});
 
 export default function HomePage() {
   const apps     = getAllApps();
@@ -13,7 +34,7 @@ export default function HomePage() {
   return (
     <>
       {/* ─── Hero ─────────────────────────────────────────────────── */}
-      <section className="relative isolate overflow-hidden">
+      <section className="relative isolate overflow-hidden" aria-labelledby="home-hero">
         {/* Background layers */}
         <div
           aria-hidden
@@ -44,15 +65,21 @@ export default function HomePage() {
             </div>
 
             {/* Heading */}
-            <h1 className="text-balance text-[52px] font-semibold leading-[1.04] tracking-[-0.04em] text-hi sm:text-[72px] lg:text-[84px]">
-              Quietly useful software,
+            <h1
+              id="home-hero"
+              className="text-balance text-[52px] font-semibold leading-[1.04] tracking-[-0.04em] text-hi sm:text-[72px] lg:text-[84px]"
+            >
+              Quietly useful AI apps,
               <br className="hidden sm:block" />{" "}
               made with care.
             </h1>
 
             {/* Subheading */}
-            <p className="mt-7 max-w-[500px] text-pretty text-[18px] leading-[1.6] text-mid sm:text-[20px]">
-              {site.name} builds focused products that respect your time, your attention, and your data.
+            <p className="mt-7 max-w-[560px] text-pretty text-[18px] leading-[1.6] text-mid sm:text-[20px]">
+              {site.name} is an independent app studio building focused AI,
+              productivity, and communication tools for iOS, Android, and the
+              web — products that respect your time, your attention, and your
+              data.
             </p>
 
             {/* CTA row */}
@@ -76,32 +103,53 @@ export default function HomePage() {
       )}
 
       {/* ─── Portfolio grid ───────────────────────────────────────── */}
-      {(otherApps.length > 0 || true) && (
-        <Section
-          eyebrow="Portfolio"
-          title="Every app from the studio."
-          description="Focused, fast, and built to last."
-        >
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {otherApps.map((app) => (
-              <AppCard key={app.slug} app={app} />
-            ))}
-            <ComingSoonCard />
-          </div>
+      <Section
+        eyebrow="Portfolio"
+        title="Every app from the studio."
+        description="Focused AI and productivity apps, built to last."
+      >
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {otherApps.map((app) => (
+            <AppCard key={app.slug} app={app} />
+          ))}
+          <ComingSoonCard />
+        </div>
 
-          <div className="mt-8">
-            <Link
-              href="/apps"
-              className="inline-flex items-center gap-1.5 text-[14px] font-medium text-mid transition-colors hover:text-hi"
+        <div className="mt-8">
+          <Link
+            href="/apps"
+            className="inline-flex items-center gap-1.5 text-[14px] font-medium text-mid transition-colors hover:text-hi"
+          >
+            See all apps
+            <svg aria-hidden width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <path d="M3 7h8M7.5 3.5 11 7l-3.5 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </Link>
+        </div>
+      </Section>
+
+      {/* ─── What we build (keyword-rich, SEO) ──────────────────── */}
+      <Section
+        eyebrow="What we build"
+        title="AI and productivity tools for everyday problems."
+        description="Not another CRM. Not another dashboard. Tools that fix specific, frustrating moments."
+      >
+        <div className="grid gap-4 sm:grid-cols-3">
+          {focus.map((f) => (
+            <article
+              key={f.title}
+              className="rounded-2xl bg-surface-raised p-7 ring-1 ring-inset ring-white/[0.08]"
             >
-              See all apps
-              <svg aria-hidden width="14" height="14" viewBox="0 0 14 14" fill="none">
-                <path d="M3 7h8M7.5 3.5 11 7l-3.5 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </Link>
-          </div>
-        </Section>
-      )}
+              <h3 className="text-[17px] font-semibold tracking-[-0.025em] text-hi">
+                {f.title}
+              </h3>
+              <p className="mt-2 text-[14px] leading-relaxed text-mid">
+                {f.body}
+              </p>
+            </article>
+          ))}
+        </div>
+      </Section>
 
       {/* ─── Principles ───────────────────────────────────────────── */}
       <Section
@@ -195,6 +243,24 @@ function ComingSoonCard() {
     </div>
   );
 }
+
+const focus = [
+  {
+    title: "AI-powered everyday tools",
+    body:
+      "We build practical AI apps that solve a single, frustrating problem — like knowing what to text next — instead of chatbots that do everything and nothing.",
+  },
+  {
+    title: "Mobile-first, cross-platform",
+    body:
+      "Our apps ship on iOS and Android with the web where it makes sense. One focused experience, available wherever you need it.",
+  },
+  {
+    title: "Privacy-respecting by default",
+    body:
+      "Local-first where possible, minimal data collection everywhere, and no selling of personal information — ever.",
+  },
+];
 
 const principles = [
   {

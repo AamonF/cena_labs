@@ -5,22 +5,16 @@ import {
   UNFUMBLED_LEGAL_LAST_UPDATED,
   unfumbledDisclaimer,
 } from "@/data/legal/unfumbled-global";
-import { site } from "@/data/site";
+import { buildMetadata } from "@/lib/seo";
 
 const path = "/disclaimer";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildMetadata({
   title: "AI Disclaimer",
   description:
-    "Important limitations of AI-generated messaging suggestions from Unfumbled by Cena Labs.",
-  alternates: { canonical: `${site.url}${path}` },
-  openGraph: {
-    title: "AI Disclaimer — Cena Labs",
-    description:
-      "Unfumbled provides informational and entertainment suggestions only — no guaranteed outcomes.",
-    url: `${site.url}${path}`,
-  },
-};
+    "Important limitations of AI-generated messaging suggestions from Unfumbled by Cena Labs — informational and entertainment use only; no guaranteed outcomes.",
+  path,
+});
 
 export default function DisclaimerPage() {
   return (

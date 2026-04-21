@@ -5,20 +5,16 @@ import {
   UNFUMBLED_LEGAL_LAST_UPDATED,
   unfumbledAcceptableUse,
 } from "@/data/legal/unfumbled-global";
-import { site } from "@/data/site";
+import { buildMetadata } from "@/lib/seo";
 
 const path = "/acceptable-use";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildMetadata({
   title: "Acceptable Use Policy",
   description:
-    "Rules for using Unfumbled — prohibited content and behavior that may lead to suspension.",
-  alternates: { canonical: `${site.url}${path}` },
-  openGraph: {
-    title: "Acceptable Use Policy — Cena Labs",
-    url: `${site.url}${path}`,
-  },
-};
+    "Rules for using Unfumbled and related Cena Labs services — prohibited content and behavior that may lead to suspension or termination.",
+  path,
+});
 
 export default function AcceptableUsePage() {
   return (

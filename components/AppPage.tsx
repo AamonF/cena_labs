@@ -22,13 +22,54 @@ export function AppPage({ app }: Props) {
     <>
       <Hero app={app} storeLinks={storeLinks} />
       <WhatItDoes app={app} />
+      {app.howItWorks && app.howItWorks.length > 0 && <HowItWorks app={app} />}
       {app.screenshots.length > 0 && <Screenshots app={app} />}
       <Features app={app} />
       {app.audience && app.audience.length > 0 && <Audience app={app} />}
+      {app.mistakes && app.mistakes.length > 0 && <Mistakes app={app} />}
+      {app.tips && app.tips.length > 0 && <Tips app={app} />}
       <CtaBanner app={app} storeLinks={storeLinks} />
       {app.faq && app.faq.length > 0 && <Faq app={app} />}
       <LegalFooter app={app} />
     </>
+  );
+}
+
+/* ─── Status pill ─────────────────────────────────────────────── */
+function StatusPill({ status }: { status: App["status"] }) {
+  const map = {
+    live: {
+      label: "Live",
+      color: "emerald",
+    },
+    beta: {
+      label: "In beta",
+      color: "amber",
+    },
+    "coming-soon": {
+      label: "Coming soon",
+      color: "sky",
+    },
+  } as const;
+  const c = map[status];
+  const classes =
+    c.color === "emerald"
+      ? "bg-emerald-500/[0.12] text-emerald-400 ring-emerald-500/[0.22]"
+      : c.color === "amber"
+        ? "bg-amber-500/[0.12] text-amber-300 ring-amber-500/[0.22]"
+        : "bg-sky-500/[0.12] text-sky-300 ring-sky-500/[0.22]";
+  const dotClass =
+    c.color === "emerald"
+      ? "bg-emerald-400"
+      : c.color === "amber"
+        ? "bg-amber-300"
+        : "bg-sky-300";
+
+  return (
+    <span className={`rounded-full px-3 py-1 text-[11px] font-medium ring-1 ring-inset ${classes}`}>
+      <span className={`mr-1.5 inline-block h-1.5 w-1.5 rounded-full ${dotClass}`} />
+      {c.label}
+    </span>
   );
 }
 
@@ -77,10 +118,7 @@ function Hero({
                   {platformLabel[p] ?? p}
                 </span>
               ))}
-              <span className="rounded-full bg-emerald-500/[0.12] px-3 py-1 text-[11px] font-medium text-emerald-400 ring-1 ring-inset ring-emerald-500/[0.22]">
-                <span className="mr-1.5 inline-block h-1.5 w-1.5 rounded-full bg-emerald-400" />
-                Live
-              </span>
+              <StatusPill status={app.status} />
             </div>
           </div>
 
@@ -317,11 +355,11 @@ function Audience({ app }: { app: App }) {
             </p>
           </div>
           <h2 className="text-balance text-3xl font-semibold tracking-[-0.03em] text-hi sm:text-4xl">
-            Built for people who know the feeling.
+            Who {app.name} is for.
           </h2>
           <p className="mt-4 max-w-lg text-pretty text-[17px] leading-relaxed text-mid">
-            If you have ever looked up and realized an hour disappeared, this
-            app was made for you.
+            {app.name} was built for people who recognize the patterns below.
+            If any of these sound like you, you are in the right place.
           </p>
         </div>
 
@@ -466,6 +504,159 @@ function Faq({ app }: { app: App }) {
               </details>
             ))}
           </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ─── How it works ────────────────────────────────────────────── */
+function HowItWorks({ app }: { app: App }) {
+  if (!app.howItWorks?.length) return null;
+  return (
+    <section
+      className="border-t border-white/[0.07] py-24 sm:py-32"
+      aria-labelledby={`${app.slug}-how`}
+    >
+      <div className="container-page">
+        <div className="mb-14 max-w-xl">
+          <div className="mb-5 flex items-center gap-3">
+            <span aria-hidden className="h-px w-5 shrink-0 bg-white/20" />
+            <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-lo">
+              How it works
+            </p>
+          </div>
+          <h2
+            id={`${app.slug}-how`}
+            className="text-balance text-3xl font-semibold tracking-[-0.03em] text-hi sm:text-4xl"
+          >
+            From confused to confident in four steps.
+          </h2>
+          <p className="mt-4 text-[15px] leading-relaxed text-mid">
+            {app.name} is built around a tight loop: drop in your conversation,
+            get a clear read, and copy a reply that actually works.
+          </p>
+        </div>
+
+        <ol className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {app.howItWorks.map((step, i) => (
+            <li
+              key={step.title}
+              className="relative flex flex-col gap-3 rounded-2xl bg-surface-raised p-6 ring-1 ring-inset ring-white/[0.08]"
+            >
+              <span
+                aria-hidden
+                className="flex h-8 w-8 items-center justify-center rounded-full text-[12px] font-semibold text-white"
+                style={{ background: app.accent ?? "#4f7bff" }}
+              >
+                {i + 1}
+              </span>
+              <h3 className="text-[15px] font-semibold tracking-[-0.02em] text-hi">
+                {step.title}
+              </h3>
+              <p className="text-[13px] leading-relaxed text-mid">
+                {step.description}
+              </p>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </section>
+  );
+}
+
+/* ─── Common mistakes ─────────────────────────────────────────── */
+function Mistakes({ app }: { app: App }) {
+  if (!app.mistakes?.length) return null;
+  return (
+    <section
+      className="border-t border-white/[0.07] bg-surface-raised/40 py-24 sm:py-32"
+      aria-labelledby={`${app.slug}-mistakes`}
+    >
+      <div className="container-page">
+        <div className="mb-14 max-w-2xl">
+          <div className="mb-5 flex items-center gap-3">
+            <span aria-hidden className="h-px w-5 shrink-0 bg-white/20" />
+            <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-lo">
+              Common mistakes
+            </p>
+          </div>
+          <h2
+            id={`${app.slug}-mistakes`}
+            className="text-balance text-3xl font-semibold tracking-[-0.03em] text-hi sm:text-4xl"
+          >
+            The texting mistakes {app.name} helps you avoid.
+          </h2>
+          <p className="mt-4 text-[15px] leading-relaxed text-mid">
+            Small patterns quietly sink otherwise good conversations. Here are
+            the ones the analysis is tuned to catch — and what to do instead.
+          </p>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          {app.mistakes.map((m, i) => (
+            <article
+              key={m.heading}
+              className="rounded-2xl bg-surface-raised p-6 ring-1 ring-inset ring-white/[0.08]"
+            >
+              <p
+                className="mb-3 text-[11px] font-semibold uppercase tracking-[0.1em]"
+                style={{ color: app.accent ?? "#4f7bff" }}
+              >
+                Mistake {String(i + 1).padStart(2, "0")}
+              </p>
+              <h3 className="text-[16px] font-semibold tracking-[-0.02em] text-hi">
+                {m.heading}
+              </h3>
+              <p className="mt-2 text-[14px] leading-relaxed text-mid">
+                {m.body}
+              </p>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ─── Tips / how to improve ───────────────────────────────────── */
+function Tips({ app }: { app: App }) {
+  if (!app.tips?.length) return null;
+  return (
+    <section
+      className="border-t border-white/[0.07] py-24 sm:py-32"
+      aria-labelledby={`${app.slug}-tips`}
+    >
+      <div className="container-page">
+        <div className="mb-14 max-w-2xl">
+          <div className="mb-5 flex items-center gap-3">
+            <span aria-hidden className="h-px w-5 shrink-0 bg-white/20" />
+            <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-lo">
+              How to improve
+            </p>
+          </div>
+          <h2
+            id={`${app.slug}-tips`}
+            className="text-balance text-3xl font-semibold tracking-[-0.03em] text-hi sm:text-4xl"
+          >
+            How to actually improve your conversations.
+          </h2>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          {app.tips.map((t) => (
+            <article
+              key={t.heading}
+              className="rounded-2xl bg-surface-raised p-6 ring-1 ring-inset ring-white/[0.08]"
+            >
+              <h3 className="text-[16px] font-semibold tracking-[-0.02em] text-hi">
+                {t.heading}
+              </h3>
+              <p className="mt-2 text-[14px] leading-relaxed text-mid">
+                {t.body}
+              </p>
+            </article>
+          ))}
         </div>
       </div>
     </section>
