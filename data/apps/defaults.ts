@@ -98,7 +98,7 @@ function formatDate(d: Date): string {
 /* ─── Default privacy policy ──────────────────────────────────── */
 
 /**
- * Generates a standard privacy policy suitable for App Store / Play Store
+ * Generates a standard privacy policy suitable for App Store
  * submission. Replace sections in your app's config object if you need
  * app-specific language. Have this reviewed by legal counsel before launch.
  */
@@ -153,7 +153,7 @@ function defaultPrivacy(
 /* ─── Default terms of service ────────────────────────────────── */
 
 /**
- * Generates standard terms of service suitable for App Store / Play Store
+ * Generates standard terms of service suitable for App Store
  * submission. Replace sections in your app's config object for app-specific
  * terms. Have this reviewed by legal counsel before launch.
  */
@@ -172,7 +172,7 @@ function defaultTerms(
       },
       {
         heading: "License",
-        body: `We grant you a personal, non-exclusive, non-transferable, revocable license to use the App for personal, non-commercial purposes, subject to these terms and any platform terms (e.g., the App Store or Google Play).`,
+        body: `We grant you a personal, non-exclusive, non-transferable, revocable license to use the App for personal, non-commercial purposes, subject to these terms and any applicable platform terms (e.g., the Apple App Store).`,
       },
       {
         heading: "Acceptable use",

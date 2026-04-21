@@ -16,7 +16,7 @@ export const unfumbled: App = {
   description:
     "Unfumbled helps people dating on iMessage, Snapchat, Instagram DMs, and more. Paste a conversation or upload screenshots; get structured feedback including interest score, ghost risk, power balance, vibe summary, mistake detection, strategic next moves, and suggested replies—fast, minimal input, dark modern UI. Built with React Native (Expo), Supabase, and OpenAI.",
   status:        "live",
-  platforms:     ["ios", "android"],
+  platforms:     ["ios"],
   featured:      true,
   accent:        "#6B5CF6",
   iconImage:     "/images/unfumbled-logo.png",
@@ -28,7 +28,7 @@ export const unfumbled: App = {
   highlights: [
     { label: "Free tier to start",      icon: "✦" },
     { label: "Paste text or screenshots", icon: "✦" },
-    { label: "iOS & Android (Expo)",    icon: "✦" },
+    { label: "iOS (Expo)",              icon: "✦" },
     { label: "Copy-paste ready replies", icon: "✦" },
   ],
 
@@ -117,13 +117,7 @@ export const unfumbled: App = {
       label: "Download on the App Store",
       href:  "#",
       kind:  "store",
-      note:  "Free on iOS 16+",
-    },
-    {
-      label: "Get it on Google Play",
-      href:  "#",
-      kind:  "store",
-      note:  "Free on Android 10+",
+      note:  "iOS 16+, rated 16+",
     },
   ],
 
@@ -134,7 +128,7 @@ export const unfumbled: App = {
   seo: {
     title: "Unfumbled — AI Texting Assistant for Dating & DMs",
     description:
-      "Unfumbled is an AI texting assistant that reads your dating chats, scores the vibe, flags mistakes, and suggests what to say next. Paste text or upload screenshots — free to try on iOS and Android.",
+      "Unfumbled is an AI texting assistant that reads your dating chats, scores the vibe, flags mistakes, and suggests what to say next. Paste text or upload screenshots — free to try on iOS (16+).",
     keywords: [
       "AI texting assistant",
       "AI dating assistant",
@@ -253,12 +247,12 @@ export const unfumbled: App = {
       a: "Unfumbled is tuned for dating dynamics: scores, ghost risk, balance of pursuit, concrete mistakes, and short replies—not long essays. Screenshot parsing and a gamified, repeatable scoring model are core differentiators.",
     },
     {
-      q: "What iOS and Android versions are supported?",
-      a: "Unfumbled targets iOS 16 or later and Android 10 or later. The app is built with React Native (Expo).",
+      q: "What iOS versions are supported?",
+      a: "Unfumbled requires iOS 16 or later. The app is built with React Native (Expo) and is distributed on the Apple App Store only.",
     },
     {
       q: "Who can use Unfumbled?",
-      a: "The product is intended for adults. If you are under 18, please do not use the App.",
+      a: "Unfumbled is rated 16+ on the App Store. You must be at least 16 years old to use the App. If you are under 16, please do not use Unfumbled.",
     },
   ],
 

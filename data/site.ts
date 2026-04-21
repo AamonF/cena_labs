@@ -12,11 +12,11 @@ export const site = {
 
   /** Short, benefit-led description used for home meta + OG. */
   description:
-    "Cena Labs is an independent app studio building focused AI and productivity apps — including Unfumbled, an AI texting and dating assistant — for iOS, Android, and the web.",
+    "Cena Labs is an independent app studio building focused AI and productivity apps — including Unfumbled, an AI texting and dating assistant — for iOS and the web.",
 
   /** Long-form description for JSON-LD / about contexts. */
   longDescription:
-    "Cena Labs is an independent app studio that designs and ships focused, fast, and privacy-respecting software. The studio builds AI-powered productivity and communication tools — starting with Unfumbled, an AI texting assistant that helps people have better conversations — for iOS, Android, and the web.",
+    "Cena Labs is an independent app studio that designs and ships focused, fast, and privacy-respecting software. The studio builds AI-powered productivity and communication tools — starting with Unfumbled, an AI texting assistant that helps people have better conversations — for iOS and the web.",
 
   url: "https://cenalabs.com",
   email: "info@cenalabs.com",
@@ -38,7 +38,6 @@ export const site = {
     "AI apps",
     "productivity apps",
     "iOS apps",
-    "Android apps",
     "Cena Labs",
     "Unfumbled",
     "AI texting assistant",

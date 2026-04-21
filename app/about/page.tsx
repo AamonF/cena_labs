@@ -6,7 +6,7 @@ import { buildMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildMetadata({
   title: `About ${site.name} — Independent AI App Studio`,
-  description: `${site.name} is an independent app studio building focused AI, productivity, and communication apps for iOS, Android, and the web — without investors, dark patterns, or tracking for its own sake.`,
+  description: `${site.name} is an independent app studio building focused AI, productivity, and communication apps for iOS and the web — without investors, dark patterns, or tracking for its own sake.`,
   path: "/about",
   keywords: [
     `${site.name} about`,

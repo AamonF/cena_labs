@@ -19,15 +19,15 @@ export const unfumbledTerms: LegalDocument = {
     },
     {
       heading: "2. Eligibility",
-      body: "You must be at least 18 years old to use the Services. By using the Services, you represent and warrant that:",
+      body: "Unfumbled is rated 16+ on the Apple App Store. You must be at least 16 years old to use the Services. By using the Services, you represent and warrant that:",
       bullets: [
-        "You are at least 18 years of age",
-        "You have the legal capacity to enter into a binding agreement",
+        "You meet the minimum age requirement for your region and for the App Store listing (16+)",
+        "You have the legal capacity to enter into a binding agreement where required by law",
         "You are not prohibited from receiving services under applicable law",
         "All information you provide is accurate and current",
       ],
       closing:
-        "If we learn that a user is under 18, we will promptly terminate their account.",
+        "If we learn that a user is under 16, we will promptly terminate their account.",
     },
     {
       heading: "3. Accounts and Access",
@@ -47,14 +47,14 @@ export const unfumbledTerms: LegalDocument = {
       bullets: [
         "Subscriptions are billed on a monthly or annual basis, depending on the plan you select",
         "Subscriptions automatically renew at the end of each billing cycle unless canceled prior to renewal",
-        "You may cancel your subscription at any time through your Apple App Store or Google Play account settings",
+        "You may cancel your subscription at any time through your Apple ID account settings (Subscriptions)",
         "Cancellation takes effect at the end of the current billing period; you will retain access through that date",
-        "Payments are processed by Apple (App Store) or Google (Play Store) and are subject to their respective terms",
+        "Payments are processed by Apple via the App Store and are subject to Apple's terms",
         "Cena Labs does not directly collect or store payment card information",
         "Subscription management is also handled via RevenueCat, our subscription infrastructure provider",
       ],
       closing:
-        "Refunds are governed by the App Store or Google Play refund policies. Cena Labs does not issue independent refunds except where required by applicable law.",
+        "Refunds are governed by the App Store refund policy. Cena Labs does not issue independent refunds except where required by applicable law.",
     },
     {
       heading: "5. Acceptable Use",
@@ -119,7 +119,7 @@ export const unfumbledTerms: LegalDocument = {
       heading: "10. Third-Party Services",
       body: "The Services rely on third-party providers to function. These include:",
       bullets: [
-        "Apple App Store and Google Play -- app distribution and in-app purchases",
+        "Apple App Store -- distribution and in-app purchases for the Unfumbled iOS app",
         "RevenueCat -- subscription management",
         "Supabase -- authentication, cloud storage, and backend infrastructure",
         "OpenAI -- AI analysis and response generation",
@@ -141,7 +141,7 @@ export const unfumbledTerms: LegalDocument = {
         "Fraudulent, deceptive, or abusive conduct",
       ],
       closing:
-        "You may also terminate your account at any time by deleting the app and canceling any active subscription through your app store account. Termination does not entitle you to a refund.",
+        "You may also terminate your account at any time by deleting the app and canceling any active subscription through your Apple ID account settings. Termination does not entitle you to a refund.",
     },
     {
       heading: "13. Disclaimer of Warranties",
@@ -241,7 +241,7 @@ export const unfumbledPrivacy: LegalDocument = {
         "Supabase -- authentication, user account storage, and optional cloud sync for saved analyses. Hosted on AWS. Data processing agreement in place.",
         "OpenAI -- AI analysis and reply generation. Conversation inputs are sent to OpenAI's API when you request an analysis. OpenAI's data use is governed by their API usage policies, which do not permit training on API inputs by default.",
         "RevenueCat -- subscription status tracking and entitlement management. Receives your app store receipt and subscription tier.",
-        "Apple App Store / Google Play -- app distribution, payment processing for subscriptions, and device-level crash reporting.",
+        "Apple App Store -- app distribution, payment processing for subscriptions, and device-level crash reporting for the iOS app.",
       ],
       closing:
         "We do not sell your data to third parties. We do not share personal information with advertisers.",
@@ -285,7 +285,7 @@ export const unfumbledPrivacy: LegalDocument = {
     },
     {
       heading: "9. Children's Privacy",
-      body: "Unfumbled is not intended for use by anyone under the age of 18. We do not knowingly collect personal information from children. If you believe a child has provided us with personal information, please contact us at support@cenalabs.com and we will promptly delete that information.",
+      body: "Unfumbled is rated 16+ and is not intended for children under 16. We do not knowingly collect personal information from anyone under 16. If you believe someone under 16 has provided us with personal information, please contact us at support@cenalabs.com and we will promptly delete that information.",
     },
     {
       heading: "10. International Users",
@@ -421,14 +421,14 @@ export const unfumbledCookies: LegalDocument = {
     },
     {
       heading: "5. Mobile App Technologies",
-      body: "The Unfumbled mobile app (iOS and Android) uses device-side storage technologies rather than browser cookies. These include:",
+      body: "The Unfumbled mobile app (iOS) uses device-side storage technologies rather than browser cookies. These include:",
       bullets: [
         "AsyncStorage / SecureStore -- stores your authentication token and local app preferences securely on your device",
         "Local file-based storage -- saves conversation analyses you choose to keep",
         "RevenueCat SDK -- tracks your subscription entitlement locally and communicates with RevenueCat's servers to verify status",
       ],
       closing:
-        "These technologies operate within the permissions model of iOS and Android and are subject to each platform's privacy rules.",
+        "These technologies operate within the permissions model of iOS and are subject to Apple's privacy rules.",
     },
     {
       heading: "6. Managing Cookies",
@@ -441,7 +441,7 @@ export const unfumbledCookies: LegalDocument = {
       secondaryIntro: "For the mobile app:",
       secondaryBullets: [
         "You can clear locally stored app data by uninstalling the app",
-        "iOS and Android provide device-level privacy controls for app data and tracking",
+        "iOS provides device-level privacy controls for app data and tracking",
         "Contact us if you would like specific data deleted from our servers",
       ],
     },

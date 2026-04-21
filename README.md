@@ -88,7 +88,7 @@ Everything is driven by typed data. To add a new app:
      summary: "A 1–2 sentence summary for cards and previews.",
      description: "Longer description (used for SEO / structured data).",
      status: "live", // "live" | "beta" | "coming-soon"
-     platforms: ["ios", "android"],
+     platforms: ["ios"], // e.g. ["ios", "android"] if you ship on both
      featured: false,
      accent: "#FF6A3D",
      iconInitials: "My",
@@ -156,7 +156,7 @@ Anything that takes an `App` is reusable across every current and future app:
 ## Customize before launch
 
 1. **`data/site.ts`** — studio name, tagline, description, URL, contact emails, founded year, location. The whole site reads from this file.
-2. **`data/apps/unfumbled.ts`** — update the copy, accent color, links (App Store / Play Store URLs), and legal text to match your actual policies.
+2. **`data/apps/unfumbled.ts`** — update the copy, accent color, App Store URL, and legal text to match your actual policies.
 3. **Legal review** — the Privacy and Terms content included is a reasonable starting template, but please have it reviewed by legal counsel before shipping.
 4. **`metadataBase`** — set via `site.url` in `data/site.ts`. Make sure this is your real production URL so Open Graph images and canonicals resolve correctly.
 5. **Screenshots** — real screenshots go in `public/` and are referenced via the `src` field on each app's `screenshots` array. The current template renders placeholders when `src` is empty.

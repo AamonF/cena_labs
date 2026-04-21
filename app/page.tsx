@@ -10,7 +10,7 @@ import { buildMetadata } from "@/lib/seo";
 export const metadata: Metadata = buildMetadata({
   title: `${site.name} — AI & Productivity Apps, Built With Care`,
   description:
-    "Cena Labs is an independent app studio building focused AI, productivity, and communication apps for iOS, Android, and the web — starting with Unfumbled, an AI texting assistant.",
+    "Cena Labs is an independent app studio building focused AI, productivity, and communication apps for iOS and the web — starting with Unfumbled, an AI texting assistant.",
   path: "/",
   keywords: [
     "app studio",
@@ -18,7 +18,6 @@ export const metadata: Metadata = buildMetadata({
     "AI apps",
     "productivity apps",
     "iOS app studio",
-    "Android app studio",
     "Unfumbled",
     "AI texting assistant",
     "Cena Labs",
@@ -77,9 +76,8 @@ export default function HomePage() {
             {/* Subheading */}
             <p className="mt-7 max-w-[560px] text-pretty text-[18px] leading-[1.6] text-mid sm:text-[20px]">
               {site.name} is an independent app studio building focused AI,
-              productivity, and communication tools for iOS, Android, and the
-              web — products that respect your time, your attention, and your
-              data.
+              productivity, and communication tools for iOS and the web —
+              products that respect your time, your attention, and your data.
             </p>
 
             {/* CTA row */}
@@ -251,9 +249,9 @@ const focus = [
       "We build practical AI apps that solve a single, frustrating problem — like knowing what to text next — instead of chatbots that do everything and nothing.",
   },
   {
-    title: "Mobile-first, cross-platform",
+    title: "Mobile-first, App Store quality",
     body:
-      "Our apps ship on iOS and Android with the web where it makes sense. One focused experience, available wherever you need it.",
+      "Our apps ship on the Apple App Store first, with the web where it makes sense. One focused experience, tuned for iPhone and iPad.",
   },
   {
     title: "Privacy-respecting by default",

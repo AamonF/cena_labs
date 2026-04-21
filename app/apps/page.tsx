@@ -10,14 +10,13 @@ import { breadcrumbSchema, softwareApplicationSchema } from "@/lib/schema";
 export const metadata: Metadata = buildMetadata({
   title: "All Apps by Cena Labs — AI, Productivity & Lifestyle",
   description:
-    "Browse every app from Cena Labs — focused AI, productivity, and lifestyle tools for iOS and Android, including Unfumbled, our AI texting assistant.",
+    "Browse every app from Cena Labs — focused AI, productivity, and lifestyle tools for iOS, including Unfumbled, our AI texting assistant.",
   path: "/apps",
   keywords: [
     "Cena Labs apps",
     "AI apps",
     "productivity apps",
     "iOS apps",
-    "Android apps",
     "Unfumbled",
     "AI texting assistant",
   ],
@@ -68,8 +67,8 @@ export default function AppsIndexPage() {
               {apps.length === 1
                 ? "One live app right now"
                 : `${apps.length} live apps right now`}{" "}
-              — focused AI and productivity tools for iOS, Android, and the
-              web. More in the making.
+              — focused AI and productivity tools for iOS and the web. More in
+              the making.
             </p>
           </div>
         </div>

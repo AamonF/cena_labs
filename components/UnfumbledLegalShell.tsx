@@ -17,7 +17,7 @@ export function UnfumbledLegalShell({
   title,
   description,
   lastUpdated,
-  appliesTo = `${UNFUMBLED.name} (iOS & Android)`,
+  appliesTo = `${UNFUMBLED.name} for iOS (Apple App Store, 16+)`,
   currentPath,
   children,
 }: Props) {
