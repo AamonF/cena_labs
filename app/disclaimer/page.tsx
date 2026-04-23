@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { LegalSectionArticle } from "@/components/LegalSectionArticle";
 import { UnfumbledLegalShell } from "@/components/UnfumbledLegalShell";
 import {
-  UNFUMBLED_LEGAL_LAST_UPDATED,
+  UNFUMBLED_DISCLAIMER_LAST_UPDATED,
   unfumbledDisclaimer,
 } from "@/data/legal/unfumbled-global";
 import { buildMetadata } from "@/lib/seo";
@@ -21,7 +21,7 @@ export default function DisclaimerPage() {
     <UnfumbledLegalShell
       title="AI Disclaimer"
       description="Please read this carefully before relying on any AI-generated suggestion."
-      lastUpdated={UNFUMBLED_LEGAL_LAST_UPDATED}
+      lastUpdated={UNFUMBLED_DISCLAIMER_LAST_UPDATED}
       currentPath={path}
     >
       <LegalSectionArticle sections={unfumbledDisclaimer.sections} />

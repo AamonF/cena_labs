@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { LegalSectionArticle } from "@/components/LegalSectionArticle";
 import { UnfumbledLegalShell } from "@/components/UnfumbledLegalShell";
 import {
-  UNFUMBLED_LEGAL_LAST_UPDATED,
+  UNFUMBLED_PRIVACY_LAST_UPDATED,
   unfumbledPrivacy,
 } from "@/data/legal/unfumbled-global";
 import { buildMetadata } from "@/lib/seo";
@@ -21,7 +21,7 @@ export default function PrivacyPage() {
     <UnfumbledLegalShell
       title="Privacy Policy"
       description="How we handle data for Unfumbled — including on-device storage and limited server processing."
-      lastUpdated={UNFUMBLED_LEGAL_LAST_UPDATED}
+      lastUpdated={UNFUMBLED_PRIVACY_LAST_UPDATED}
       currentPath={path}
     >
       <LegalSectionArticle sections={unfumbledPrivacy.sections} />
