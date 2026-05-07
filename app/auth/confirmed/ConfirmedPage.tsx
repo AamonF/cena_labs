@@ -1,9 +1,13 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useRef, useState } from "react";
+
+import { useAuth } from "@/lib/auth/AuthProvider";
+import { devLog } from "@/lib/auth/devLog";
 
 /* ─── Types ──────────────────────────────────────────────────────── */
 interface Particle {
@@ -25,6 +29,13 @@ interface Confetti {
   color: string;
   size: number;
 }
+
+interface UrlAuthError {
+  code?: string;
+  description?: string;
+}
+
+type Phase = "verifying" | "authenticated" | "error";
 
 /* ─── Animation variants ─────────────────────────────────────────── */
 const EASE_SMOOTH = [0.4, 0, 0.2, 1] as [number, number, number, number];
@@ -57,19 +68,53 @@ const CONFETTI_COLORS = [
   "#3B82F6",
 ];
 
-/** Promptly web app root; set in env for production (e.g. Vercel). Falls back to home. */
-const RETURN_TO_APP_HREF =
-  process.env.NEXT_PUBLIC_RETURN_TO_APP_URL?.trim() || "/";
+/* ─── Auth flow constants ────────────────────────────────────────── */
+/** Where to send a successfully-confirmed user. */
+const ONBOARDING_HREF = "/onboarding";
+/** Delay before automatically forwarding the user. They can also click manually. */
+const AUTO_REDIRECT_MS = 2000;
+/** If we're still without a session after this long, surface the error UI. */
+const VERIFICATION_GRACE_MS = 5000;
+
+/** Read auth-error params Supabase can attach to the redirect (`?error=` or `#error=`). */
+function readUrlAuthError(): UrlAuthError | null {
+  if (typeof window === "undefined") return null;
+  const search = new URLSearchParams(window.location.search);
+  const hashSource = window.location.hash.startsWith("#")
+    ? window.location.hash.slice(1)
+    : "";
+  const hash = new URLSearchParams(hashSource);
+  const err = search.get("error") || hash.get("error");
+  if (!err) return null;
+  return {
+    code: search.get("error_code") || hash.get("error_code") || err,
+    description:
+      search.get("error_description") ||
+      hash.get("error_description") ||
+      "We couldn't confirm this email link.",
+  };
+}
 
 /* ─── Component ──────────────────────────────────────────────────── */
 export function ConfirmedPage() {
   const prefersReducedMotion = useReducedMotion();
+  const router = useRouter();
+  const { status, user } = useAuth();
+
   const [particles, setParticles] = useState<Particle[]>([]);
   const [confetti, setConfetti] = useState<Confetti[]>([]);
   const [mounted, setMounted] = useState(false);
+  const [urlError, setUrlError] = useState<UrlAuthError | null>(null);
+  const [graceElapsed, setGraceElapsed] = useState(false);
 
+  // Latches once we kick off the navigation, so neither a re-render nor the
+  // 2s timer can fire `router.replace` twice and create a back-button loop.
+  const hasRedirectedRef = useRef(false);
+
+  // ── Mount-only side effects ─────────────────────────────────────
   useEffect(() => {
     setMounted(true);
+    setUrlError(readUrlAuthError());
 
     setParticles(
       Array.from({ length: 22 }, (_, i) => ({
@@ -94,7 +139,49 @@ export function ConfirmedPage() {
         size: Math.random() * 6 + 4,
       }))
     );
+
+    devLog("confirmation redirect detected", window.location.pathname);
   }, []);
+
+  // ── Verification grace window ───────────────────────────────────
+  // Give Supabase's PKCE code-exchange a fair window to populate the
+  // session before we admit failure to the user.
+  useEffect(() => {
+    if (status === "authenticated") return;
+    const t = window.setTimeout(() => setGraceElapsed(true), VERIFICATION_GRACE_MS);
+    return () => window.clearTimeout(t);
+  }, [status]);
+
+  // ── Auto-redirect on success ────────────────────────────────────
+  useEffect(() => {
+    if (status !== "authenticated") return;
+    if (hasRedirectedRef.current) return;
+
+    const t = window.setTimeout(() => {
+      if (hasRedirectedRef.current) return;
+      hasRedirectedRef.current = true;
+      devLog("onboarding redirect triggered", user?.email ? `user=${user.email}` : "");
+      router.replace(ONBOARDING_HREF);
+    }, AUTO_REDIRECT_MS);
+
+    return () => window.clearTimeout(t);
+  }, [status, router, user]);
+
+  // ── Derived render phase ────────────────────────────────────────
+  const phase: Phase = useMemo(() => {
+    if (urlError) return "error";
+    if (status === "authenticated") return "authenticated";
+    if (status === "unauthenticated" && graceElapsed) return "error";
+    return "verifying";
+  }, [status, urlError, graceElapsed]);
+
+  const handleManualContinue = () => {
+    if (hasRedirectedRef.current) return;
+    hasRedirectedRef.current = true;
+    devLog("onboarding redirect triggered (manual)");
+    // Link's default navigation will run; setting the latch first prevents
+    // the auto-redirect timer from firing a second navigation behind it.
+  };
 
   return (
     <div className="relative flex min-h-[calc(100vh-60px)] items-center justify-center overflow-hidden bg-[#0B1020] px-4 py-16 md:py-20">
@@ -189,8 +276,8 @@ export function ConfirmedPage() {
         />
       </div>
 
-      {/* ── Confetti burst (one-time on load) ──────────────────── */}
-      {mounted && !prefersReducedMotion && (
+      {/* ── Confetti burst (only after successful verification) ── */}
+      {mounted && !prefersReducedMotion && phase === "authenticated" && (
         <div
           className="pointer-events-none absolute inset-x-0 top-0 overflow-hidden"
           aria-hidden
@@ -310,126 +397,260 @@ export function ConfirmedPage() {
           />
 
           <div className="px-8 pb-8 pt-7 md:px-10 md:pb-10 md:pt-9">
-            <motion.div
-              variants={containerVariant}
-              initial="hidden"
-              animate="visible"
-              className="flex flex-col items-center gap-5 text-center"
-            >
+            <AnimatePresence mode="wait" initial={false}>
+              {phase === "verifying" && (
+                <VerifyingContent key="verifying" />
+              )}
 
-              {/* Verified badge */}
-              <motion.div variants={itemVariant}>
-                <div className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/[0.12] px-3.5 py-1.5">
-                  <svg
-                    className="h-3.5 w-3.5 flex-shrink-0 text-emerald-400"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth="2.5"
-                    stroke="currentColor"
-                    aria-hidden
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M4.5 12.75l6 6 9-13.5"
-                    />
-                  </svg>
-                  <span className="text-[11px] font-semibold uppercase tracking-[0.1em] text-emerald-400">
-                    Email Verified
-                  </span>
-                </div>
-              </motion.div>
+              {phase === "authenticated" && (
+                <AuthenticatedContent
+                  key="authenticated"
+                  onContinueClick={handleManualContinue}
+                />
+              )}
 
-              {/* Heading */}
-              <motion.h1
-                variants={itemVariant}
-                className="text-[28px] font-bold leading-[1.18] tracking-tight text-white sm:text-[32px]"
-              >
-                Welcome to Promptly{" "}
-                <span aria-label="lightning bolt">⚡</span>
-              </motion.h1>
-
-              {/* Subheading */}
-              <motion.p
-                variants={itemVariant}
-                className="text-[15px] font-medium leading-snug text-[#9EB4D8]"
-              >
-                Your AI learning journey is ready to begin.
-              </motion.p>
-
-              {/* Description */}
-              <motion.p
-                variants={itemVariant}
-                className="text-[13.5px] leading-[1.7] text-[#5E6E8A] text-balance"
-              >
-                Learn prompting, agents, automation, workflows, and real-world AI
-                skills through interactive progression.
-              </motion.p>
-
-              {/* Divider */}
-              <motion.div
-                variants={itemVariant}
-                className="h-px w-full"
-                style={{
-                  background:
-                    "linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent)",
-                }}
-              />
-
-              {/* CTA — return to Promptly app */}
-              <motion.div variants={itemVariant} className="w-full">
-                <Link
-                  href={RETURN_TO_APP_HREF}
-                  className="group relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-2xl px-5 py-[14px] text-[14px] font-semibold leading-snug text-white transition-transform duration-200 hover:scale-[1.025] active:scale-[0.975] sm:text-[15px]"
-                  style={{
-                    background:
-                      "linear-gradient(135deg, #7C3AED 0%, #4F46E5 50%, #2563EB 100%)",
-                    boxShadow:
-                      "0 0 0 1px rgba(124,58,237,0.35), 0 4px 28px rgba(124,58,237,0.40), inset 0 1px 0 rgba(255,255,255,0.15)",
-                  }}
-                >
-                  {/* Hover glow overlay */}
-                  <span
-                    className="absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-                    style={{
-                      background:
-                        "linear-gradient(135deg, #8B5CF6 0%, #6366F1 50%, #3B82F6 100%)",
-                    }}
-                    aria-hidden
-                  />
-                  {/* Shimmer sweep */}
-                  <span
-                    className="absolute inset-0 -translate-x-full transition-transform duration-700 group-hover:translate-x-full"
-                    style={{
-                      background:
-                        "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.12) 50%, transparent 100%)",
-                    }}
-                    aria-hidden
-                  />
-
-                  <span className="relative text-center text-pretty">
-                    Return to the app to start your journey now
-                  </span>
-                  <svg
-                    className="relative h-4 w-4 shrink-0 transition-transform duration-300 group-hover:translate-x-0.5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth="2"
-                    stroke="currentColor"
-                    aria-hidden
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"
-                    />
-                  </svg>
-                </Link>
-              </motion.div>
-            </motion.div>
+              {phase === "error" && (
+                <ErrorContent key="error" error={urlError} />
+              )}
+            </AnimatePresence>
           </div>
         </motion.div>
       </div>
     </div>
+  );
+}
+
+/* ─── Phase: verifying (initial state during PKCE exchange) ─────── */
+function VerifyingContent() {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -8 }}
+      transition={{ duration: 0.35, ease: EASE_SMOOTH }}
+      className="flex flex-col items-center gap-5 text-center"
+      role="status"
+      aria-live="polite"
+    >
+      {/* Status pill */}
+      <div className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/[0.06] px-3.5 py-1.5">
+        <span className="h-2 w-2 animate-pulse rounded-full bg-purple-400" />
+        <span className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[#9EB4D8]">
+          Confirming
+        </span>
+      </div>
+
+      {/* Spinner */}
+      <Spinner />
+
+      {/* Heading */}
+      <h1 className="text-[24px] font-bold leading-[1.18] tracking-tight text-white sm:text-[26px]">
+        Verifying your email…
+      </h1>
+
+      {/* Sub copy */}
+      <p className="text-[13.5px] leading-[1.7] text-[#5E6E8A]">
+        Hang tight — this only takes a moment.
+      </p>
+    </motion.div>
+  );
+}
+
+/* ─── Phase: authenticated (the original celebration UI) ────────── */
+function AuthenticatedContent({
+  onContinueClick,
+}: {
+  onContinueClick: () => void;
+}) {
+  return (
+    <motion.div
+      key="authenticated"
+      variants={containerVariant}
+      initial="hidden"
+      animate="visible"
+      exit={{ opacity: 0, y: -8, transition: { duration: 0.25 } }}
+      className="flex flex-col items-center gap-5 text-center"
+    >
+      {/* Verified badge */}
+      <motion.div variants={itemVariant}>
+        <div className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/[0.12] px-3.5 py-1.5">
+          <svg
+            className="h-3.5 w-3.5 flex-shrink-0 text-emerald-400"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth="2.5"
+            stroke="currentColor"
+            aria-hidden
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M4.5 12.75l6 6 9-13.5"
+            />
+          </svg>
+          <span className="text-[11px] font-semibold uppercase tracking-[0.1em] text-emerald-400">
+            Email Verified
+          </span>
+        </div>
+      </motion.div>
+
+      {/* Heading */}
+      <motion.h1
+        variants={itemVariant}
+        className="text-[28px] font-bold leading-[1.18] tracking-tight text-white sm:text-[32px]"
+      >
+        Welcome to Promptly{" "}
+        <span aria-label="lightning bolt">⚡</span>
+      </motion.h1>
+
+      {/* Subheading */}
+      <motion.p
+        variants={itemVariant}
+        className="text-[15px] font-medium leading-snug text-[#9EB4D8]"
+      >
+        Your AI learning journey is ready to begin.
+      </motion.p>
+
+      {/* Description */}
+      <motion.p
+        variants={itemVariant}
+        className="text-[13.5px] leading-[1.7] text-[#5E6E8A] text-balance"
+      >
+        Learn prompting, agents, automation, workflows, and real-world AI
+        skills through interactive progression.
+      </motion.p>
+
+      {/* Divider */}
+      <motion.div
+        variants={itemVariant}
+        className="h-px w-full"
+        style={{
+          background:
+            "linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent)",
+        }}
+      />
+
+      {/* CTA — manual continue (auto-redirect happens in parallel) */}
+      <motion.div variants={itemVariant} className="w-full">
+        <Link
+          href={ONBOARDING_HREF}
+          onClick={onContinueClick}
+          prefetch
+          className="group relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-2xl px-5 py-[14px] text-[14px] font-semibold leading-snug text-white transition-transform duration-200 hover:scale-[1.025] active:scale-[0.975] sm:text-[15px]"
+          style={{
+            background:
+              "linear-gradient(135deg, #7C3AED 0%, #4F46E5 50%, #2563EB 100%)",
+            boxShadow:
+              "0 0 0 1px rgba(124,58,237,0.35), 0 4px 28px rgba(124,58,237,0.40), inset 0 1px 0 rgba(255,255,255,0.15)",
+          }}
+        >
+          {/* Hover glow overlay */}
+          <span
+            className="absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+            style={{
+              background:
+                "linear-gradient(135deg, #8B5CF6 0%, #6366F1 50%, #3B82F6 100%)",
+            }}
+            aria-hidden
+          />
+          {/* Shimmer sweep */}
+          <span
+            className="absolute inset-0 -translate-x-full transition-transform duration-700 group-hover:translate-x-full"
+            style={{
+              background:
+                "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.12) 50%, transparent 100%)",
+            }}
+            aria-hidden
+          />
+
+          <span className="relative text-center text-pretty">
+            Return to the app to start your journey now
+          </span>
+          <svg
+            className="relative h-4 w-4 shrink-0 transition-transform duration-300 group-hover:translate-x-0.5"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth="2"
+            stroke="currentColor"
+            aria-hidden
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"
+            />
+          </svg>
+        </Link>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+/* ─── Phase: error (URL error or session never arrived) ─────────── */
+function ErrorContent({ error }: { error: UrlAuthError | null }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -8 }}
+      transition={{ duration: 0.35, ease: EASE_SMOOTH }}
+      className="flex flex-col items-center gap-5 text-center"
+    >
+      {/* Status pill */}
+      <div className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/30 bg-amber-500/[0.12] px-3.5 py-1.5">
+        <svg
+          className="h-3.5 w-3.5 flex-shrink-0 text-amber-400"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          aria-hidden
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M12 9v3.75m0 3.75h.008v.008H12v-.008zM10.115 4.5h3.77c.535 0 1.037.282 1.314.74l5.038 8.32c.597.985-.111 2.24-1.314 2.24H4.077c-1.203 0-1.911-1.255-1.314-2.24l5.038-8.32A1.534 1.534 0 0110.115 4.5z"
+          />
+        </svg>
+        <span className="text-[11px] font-semibold uppercase tracking-[0.1em] text-amber-400">
+          Couldn&apos;t verify
+        </span>
+      </div>
+
+      <h1 className="text-[24px] font-bold leading-[1.18] tracking-tight text-white sm:text-[26px]">
+        This link didn&apos;t work
+      </h1>
+
+      <p className="text-[13.5px] leading-[1.7] text-[#5E6E8A] text-balance">
+        {error?.description ??
+          "Your confirmation link may have expired or already been used. Try opening the most recent email we sent you, or request a new one."}
+      </p>
+
+      <div
+        className="h-px w-full"
+        style={{
+          background:
+            "linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent)",
+        }}
+      />
+
+      <Link
+        href="/support"
+        className="text-[13px] font-medium text-[#9EB4D8] underline underline-offset-4 decoration-white/20 transition-colors hover:decoration-white/50"
+      >
+        Need help? Contact support →
+      </Link>
+    </motion.div>
+  );
+}
+
+/* ─── Tiny spinner in the brand colour ──────────────────────────── */
+function Spinner() {
+  return (
+    <span
+      className="inline-block h-9 w-9 animate-spin rounded-full border-[3px] border-white/10 border-t-purple-400"
+      role="img"
+      aria-label="Loading"
+    />
   );
 }

@@ -10,6 +10,8 @@
     "new-app": "node scripts/new-app.mjs"
   },
   "dependencies": {
+    "@supabase/ssr": "^0.10.2",
+    "@supabase/supabase-js": "^2.105.3",
     "framer-motion": "^12.38.0",
     "next": "14.2.18",
     "react": "18.3.1",

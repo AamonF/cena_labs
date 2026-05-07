@@ -3,6 +3,7 @@ import "./globals.css";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { JsonLd } from "@/components/JsonLd";
+import { AuthProvider } from "@/lib/auth/AuthProvider";
 import { site } from "@/data/site";
 import { absoluteUrl } from "@/lib/seo";
 import { organizationSchema, websiteSchema } from "@/lib/schema";
@@ -82,9 +83,11 @@ export default function RootLayout({
         >
           Skip to content
         </a>
-        <Navbar />
-        <main id="main">{children}</main>
-        <Footer />
+        <AuthProvider>
+          <Navbar />
+          <main id="main">{children}</main>
+          <Footer />
+        </AuthProvider>
         <JsonLd data={[organizationSchema(), websiteSchema()]} />
       </body>
     </html>

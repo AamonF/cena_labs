@@ -166,3 +166,98 @@ Anything that takes an `App` is reusable across every current and future app:
 ## Design direction
 
 Minimal, premium, Apple/Stripe/Linear-inspired. Generous spacing, tight typography, muted ink palette, small amount of color reserved for per-app accents.
+
+## Auth (Supabase)
+
+The site supports a Supabase email-confirmation signup flow. After a user signs up, Supabase emails them a link, they click it, they land on `/auth/confirmed`, the session is established in their browser, and they are forwarded to `/onboarding` automatically.
+
+### 1. Required environment variables
+
+Copy `.env.example` to `.env.local` and fill in:
+
+```
+NEXT_PUBLIC_SUPABASE_URL="https://YOUR-PROJECT-REF.supabase.co"
+NEXT_PUBLIC_SUPABASE_ANON_KEY="YOUR-ANON-KEY"
+NEXT_PUBLIC_SITE_URL="https://www.cenalabs.com"
+```
+
+In production set the same vars in Vercel (Project → Settings → Environment Variables).
+
+### 2. Supabase Dashboard configuration
+
+In your Supabase project (Auth → URL Configuration):
+
+- **Site URL**: `https://www.cenalabs.com`
+- **Redirect URLs** — allow all of:
+  - `https://www.cenalabs.com/auth/confirmed`
+  - `https://*-cenalabs.vercel.app/auth/confirmed` (preview deploys)
+  - `http://localhost:3000/auth/confirmed` (local dev)
+
+### 3. Wiring a signup form
+
+Use the reusable helper anywhere a "Create account" form lives:
+
+```ts
+import { signUpWithEmail } from "@/lib/auth/signUp";
+
+const result = await signUpWithEmail({ email, password });
+
+if (!result.ok) {
+  // surface result.error.message
+} else if (result.needsEmailConfirmation) {
+  // show "Check your inbox" screen
+} else {
+  // session is already live → router.push("/onboarding")
+}
+```
+
+The helper always sets `emailRedirectTo` to `${NEXT_PUBLIC_SITE_URL}/auth/confirmed`, so the email link works correctly across local, preview, and production deployments.
+
+### 4. Reading auth state in components
+
+Anywhere inside a client component below the root `<AuthProvider>` (already wired in `app/layout.tsx`):
+
+```tsx
+"use client";
+import { useAuth } from "@/lib/auth/AuthProvider";
+
+export function Example() {
+  const { status, user, signOut } = useAuth();
+
+  if (status === "initializing") return <Skeleton />;
+  if (status === "unauthenticated") return <SignInPrompt />;
+  return <p>Hi {user?.email}</p>;
+}
+```
+
+### 5. Reading auth state on the server
+
+In server components / route handlers:
+
+```ts
+import { getSupabaseServerClient } from "@/lib/supabase/server";
+
+const supabase = getSupabaseServerClient();
+const { data: { user } } = await supabase.auth.getUser();
+```
+
+### 6. File map
+
+```
+lib/
+  supabase/
+    env.ts              # validated public env access
+    client.ts           # singleton browser client (PKCE)
+    server.ts           # App Router server client (cookie-bound)
+  auth/
+    AuthProvider.tsx    # global session state + listener
+    signUp.ts           # signUpWithEmail helper (sets emailRedirectTo)
+    devLog.ts           # dev-only logger (silent in production)
+
+app/
+  auth/confirmed/
+    page.tsx            # SEO + metadata wrapper
+    ConfirmedPage.tsx   # PKCE exchange via the browser client,
+                        # renders verifying / success / error states,
+                        # auto-redirects to /onboarding after 2s
+```
