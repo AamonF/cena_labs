@@ -41,9 +41,16 @@ export function getSiteOrigin(): string {
   return "https://www.cenalabs.com";
 }
 
-/** Path Supabase should redirect users to after they click the email link. */
+/** Path Supabase should redirect users to after they click the email confirmation link. */
 export const EMAIL_CONFIRMED_REDIRECT_PATH = "/auth/confirmed";
 
 export function getEmailConfirmedRedirectUrl(): string {
   return `${getSiteOrigin()}${EMAIL_CONFIRMED_REDIRECT_PATH}`;
+}
+
+/** Path Supabase should redirect users to after they click the password reset email link. */
+export const PASSWORD_RESET_REDIRECT_PATH = "/auth/reset-password";
+
+export function getPasswordResetRedirectUrl(): string {
+  return `${getSiteOrigin()}${PASSWORD_RESET_REDIRECT_PATH}`;
 }
