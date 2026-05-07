@@ -301,9 +301,9 @@ function Features({ app }: { app: App }) {
           </p>
         </div>
         <h2 className="text-balance text-3xl font-semibold tracking-[-0.03em] text-hi sm:text-4xl">
-          Everything it needs.
+          {app.pageCopy?.features?.line1 ?? "Everything it needs."}
           <br />
-          Nothing it doesn&apos;t.
+          {app.pageCopy?.features?.line2 ?? "Nothing it doesn\u2019t."}
         </h2>
       </div>
 
@@ -530,11 +530,12 @@ function HowItWorks({ app }: { app: App }) {
             id={`${app.slug}-how`}
             className="text-balance text-3xl font-semibold tracking-[-0.03em] text-hi sm:text-4xl"
           >
-            From confused to confident in four steps.
+            {app.pageCopy?.howItWorks?.heading ??
+              "From confused to confident in four steps."}
           </h2>
           <p className="mt-4 text-[15px] leading-relaxed text-mid">
-            {app.name} is built around a tight loop: drop in your conversation,
-            get a clear read, and copy a reply that actually works.
+            {app.pageCopy?.howItWorks?.lead ??
+              `${app.name} is built around a tight loop: drop in your conversation, get a clear read, and copy a reply that actually works.`}
           </p>
         </div>
 
@@ -585,11 +586,12 @@ function Mistakes({ app }: { app: App }) {
             id={`${app.slug}-mistakes`}
             className="text-balance text-3xl font-semibold tracking-[-0.03em] text-hi sm:text-4xl"
           >
-            The texting mistakes {app.name} helps you avoid.
+            {app.pageCopy?.mistakes?.heading ??
+              `The texting mistakes ${app.name} helps you avoid.`}
           </h2>
           <p className="mt-4 text-[15px] leading-relaxed text-mid">
-            Small patterns quietly sink otherwise good conversations. Here are
-            the ones the analysis is tuned to catch — and what to do instead.
+            {app.pageCopy?.mistakes?.lead ??
+              "Small patterns quietly sink otherwise good conversations. Here are the ones the analysis is tuned to catch — and what to do instead."}
           </p>
         </div>
 
@@ -639,7 +641,8 @@ function Tips({ app }: { app: App }) {
             id={`${app.slug}-tips`}
             className="text-balance text-3xl font-semibold tracking-[-0.03em] text-hi sm:text-4xl"
           >
-            How to actually improve your conversations.
+            {app.pageCopy?.tips?.heading ??
+              "How to actually improve your conversations."}
           </h2>
         </div>
 

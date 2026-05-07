@@ -53,6 +53,25 @@ export type AppArticleEntry = {
   body: string;
 };
 
+/** Optional marketing copy overrides for `AppPage` section headers (defaults are tuned for the first flagship app). */
+export type AppPageCopy = {
+  howItWorks?: {
+    heading?: string;
+    lead?: string;
+  };
+  features?: {
+    line1?: string;
+    line2?: string;
+  };
+  mistakes?: {
+    heading?: string;
+    lead?: string;
+  };
+  tips?: {
+    heading?: string;
+  };
+};
+
 /** Optional SEO-specific copy for an app. Falls back to `summary` / name-based
  *  values when not provided, so it stays optional for future apps. */
 export type AppSeo = {
@@ -143,6 +162,9 @@ export type App = {
   /** Optional SEO-specific overrides. */
   seo?: AppSeo;
 
+  /** Optional section headings / leads on the public app page. */
+  pageCopy?: AppPageCopy;
+
   /**
    * Optional canonical URL overrides for an app's legal sub-pages. Use this
    * when the studio publishes the same legal document at a top-level URL
@@ -155,6 +177,13 @@ export type App = {
     privacy?: string;
     terms?:   string;
   };
+
+  /** AI disclaimer (published under /apps/<slug>/ai-disclaimer when set). */
+  aiDisclaimer?: LegalDocument;
+  cookies?:       LegalDocument;
+  acceptableUse?: LegalDocument;
+  /** How to reach the company (policy text), distinct from studio marketing contact. */
+  contactPolicy?: LegalDocument;
 
   privacy: LegalDocument;
   terms:   LegalDocument;

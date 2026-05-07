@@ -54,6 +54,39 @@ export default function sitemap(): MetadataRoute.Sitemap {
       });
     }
 
+    if (app.cookies) {
+      entries.push({
+        url: `${base}/apps/${app.slug}/cookies`,
+        lastModified: now,
+        changeFrequency: "yearly",
+        priority: 0.25,
+      });
+    }
+    if (app.aiDisclaimer) {
+      entries.push({
+        url: `${base}/apps/${app.slug}/ai-disclaimer`,
+        lastModified: now,
+        changeFrequency: "yearly",
+        priority: 0.25,
+      });
+    }
+    if (app.acceptableUse) {
+      entries.push({
+        url: `${base}/apps/${app.slug}/acceptable-use`,
+        lastModified: now,
+        changeFrequency: "yearly",
+        priority: 0.25,
+      });
+    }
+    if (app.contactPolicy) {
+      entries.push({
+        url: `${base}/apps/${app.slug}/contact`,
+        lastModified: now,
+        changeFrequency: "yearly",
+        priority: 0.25,
+      });
+    }
+
     return entries;
   });
 

@@ -164,3 +164,17 @@ export function buildAppLegalMetadata(
 
   return meta;
 }
+
+/** Metadata for supplemental legal documents under `/apps/<slug>/…`. */
+export function buildAppLegalDocumentMetadata(
+  app: App,
+  opts: { path: string; title: string; description: string },
+): Metadata {
+  return buildMetadata({
+    title: opts.title,
+    description: opts.description,
+    path: opts.path,
+    image: app.iconImage,
+    absoluteTitle: true,
+  });
+}

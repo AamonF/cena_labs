@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { site } from "@/data/site";
 import { getAllApps } from "@/data/apps";
+import { appLegalNavEntries } from "@/data/legal/nav";
 import { unfumbledLegalRoutes } from "@/data/legal/unfumbled-global";
 
 export function Footer() {
@@ -98,18 +99,15 @@ export function Footer() {
                       </>
                     ) : (
                       <>
-                        <Link
-                          href={`/apps/${app.slug}/privacy`}
-                          className="text-[13px] text-mid transition-colors hover:text-hi"
-                        >
-                          Privacy Policy
-                        </Link>
-                        <Link
-                          href={`/apps/${app.slug}/terms`}
-                          className="text-[13px] text-mid transition-colors hover:text-hi"
-                        >
-                          Terms of Service
-                        </Link>
+                        {appLegalNavEntries(app).map((r) => (
+                          <Link
+                            key={r.href}
+                            href={r.href}
+                            className="text-[13px] text-mid transition-colors hover:text-hi"
+                          >
+                            {r.label}
+                          </Link>
+                        ))}
                       </>
                     )}
                   </div>

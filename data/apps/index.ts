@@ -1,4 +1,5 @@
 import type { App } from "../types";
+import { promptly } from "./promptly";
 import { unfumbled } from "./unfumbled";
 
 /**
@@ -31,7 +32,7 @@ import { unfumbled } from "./unfumbled";
  *
  * Order in the array controls display order across the site.
  */
-export const apps: App[] = [unfumbled];
+export const apps: App[] = [unfumbled, promptly];
 
 export function getAllApps(): App[] {
   return apps;

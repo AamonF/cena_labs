@@ -10,7 +10,7 @@ import { breadcrumbSchema, softwareApplicationSchema } from "@/lib/schema";
 export const metadata: Metadata = buildMetadata({
   title: "All Apps by Cena Labs — AI, Productivity & Lifestyle",
   description:
-    "Browse every app from Cena Labs — focused AI, productivity, and lifestyle tools for iOS, including Unfumbled, our AI texting assistant.",
+    "Browse every app from Cena Labs — focused AI, productivity, and lifestyle tools for iOS, including Unfumbled and Promptly.",
   path: "/apps",
   keywords: [
     "Cena Labs apps",
@@ -18,6 +18,8 @@ export const metadata: Metadata = buildMetadata({
     "productivity apps",
     "iOS apps",
     "Unfumbled",
+    "Promptly",
+    "AI education",
     "AI texting assistant",
   ],
   absoluteTitle: true,

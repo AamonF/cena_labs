@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { LegalSectionArticle } from "@/components/LegalSectionArticle";
+import { appLegalNavEntries } from "@/data/legal/nav";
 import { site } from "@/data/site";
 import type { App, LegalDocument } from "@/data/types";
 
@@ -24,8 +25,9 @@ const meta: Record<Kind, { title: string; description: string }> = {
 
 export function LegalPage({ app, kind, document }: Props) {
   const current   = meta[kind];
-  const otherKind = kind === "privacy" ? "terms" : "privacy";
-  const other     = meta[otherKind];
+  const currentPath = `/apps/${app.slug}/${kind}`;
+  const nav       = appLegalNavEntries(app);
+  const seeAlso   = nav.filter((r) => r.href !== currentPath);
 
   return (
     <>
@@ -112,27 +114,33 @@ export function LegalPage({ app, kind, document }: Props) {
               <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.1em] text-lo">
                 See also
               </p>
-              <Link
-                href={`/apps/${app.slug}/${otherKind}`}
-                className="inline-flex items-center gap-1.5 text-[14px] font-medium text-mid transition-colors hover:text-hi"
-              >
-                {other.title}
-                <svg
-                  aria-hidden
-                  width="13"
-                  height="13"
-                  viewBox="0 0 13 13"
-                  fill="none"
-                >
-                  <path
-                    d="M2.5 6.5h8M7 3l3.5 3.5L7 10"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </Link>
+              <ul className="flex flex-col gap-2">
+                {seeAlso.map((r) => (
+                  <li key={r.href}>
+                    <Link
+                      href={r.href}
+                      className="inline-flex items-center gap-1.5 text-[14px] font-medium text-mid transition-colors hover:text-hi"
+                    >
+                      {r.label}
+                      <svg
+                        aria-hidden
+                        width="13"
+                        height="13"
+                        viewBox="0 0 13 13"
+                        fill="none"
+                      >
+                        <path
+                          d="M2.5 6.5h8M7 3l3.5 3.5L7 10"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
             </div>
 
             {/* Back nav */}

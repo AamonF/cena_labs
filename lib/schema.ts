@@ -76,7 +76,9 @@ export function softwareApplicationSchema(app: App) {
     operatingSystem: app.platforms.map((p) => OS_LABEL[p]).join(", "),
     url,
     image,
-    screenshot: app.screenshots.map((s) => absoluteUrl(s.src)),
+    screenshot: app.screenshots
+      .filter((s) => s.src?.trim())
+      .map((s) => absoluteUrl(s.src)),
     offers: {
       "@type": "Offer",
       price: "0",
