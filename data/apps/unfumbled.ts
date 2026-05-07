@@ -115,7 +115,7 @@ export const unfumbled: App = {
   links: [
     {
       label: "Download on the App Store",
-      href:  "#",
+      href:  "https://apps.apple.com/us/app/unfumbled-better-texts/id6762696868",
       kind:  "store",
       note:  "iOS 16+, rated 16+",
     },

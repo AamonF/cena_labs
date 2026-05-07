@@ -57,6 +57,10 @@ const CONFETTI_COLORS = [
   "#3B82F6",
 ];
 
+/** Promptly web app root; set in env for production (e.g. Vercel). Falls back to home. */
+const RETURN_TO_APP_HREF =
+  process.env.NEXT_PUBLIC_RETURN_TO_APP_URL?.trim() || "/";
+
 /* ─── Component ──────────────────────────────────────────────────── */
 export function ConfirmedPage() {
   const prefersReducedMotion = useReducedMotion();
@@ -372,11 +376,11 @@ export function ConfirmedPage() {
                 }}
               />
 
-              {/* CTA Button */}
+              {/* CTA — return to Promptly app */}
               <motion.div variants={itemVariant} className="w-full">
                 <Link
-                  href="/onboarding"
-                  className="group relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-2xl px-6 py-[14px] text-[15px] font-semibold text-white transition-transform duration-200 hover:scale-[1.025] active:scale-[0.975]"
+                  href={RETURN_TO_APP_HREF}
+                  className="group relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-2xl px-5 py-[14px] text-[14px] font-semibold leading-snug text-white transition-transform duration-200 hover:scale-[1.025] active:scale-[0.975] sm:text-[15px]"
                   style={{
                     background:
                       "linear-gradient(135deg, #7C3AED 0%, #4F46E5 50%, #2563EB 100%)",
@@ -403,9 +407,11 @@ export function ConfirmedPage() {
                     aria-hidden
                   />
 
-                  <span className="relative">Start Onboarding</span>
+                  <span className="relative text-center text-pretty">
+                    Return to the app to start your journey now
+                  </span>
                   <svg
-                    className="relative h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5"
+                    className="relative h-4 w-4 shrink-0 transition-transform duration-300 group-hover:translate-x-0.5"
                     fill="none"
                     viewBox="0 0 24 24"
                     strokeWidth="2"
@@ -420,20 +426,6 @@ export function ConfirmedPage() {
                   </svg>
                 </Link>
               </motion.div>
-
-              {/* Secondary link */}
-              <motion.p
-                variants={itemVariant}
-                className="text-[13px] text-[#48566E]"
-              >
-                Already completed setup?{" "}
-                <Link
-                  href="/dashboard"
-                  className="font-medium text-[#7A8FA8] underline underline-offset-[3px] decoration-[#7A8FA8]/30 transition-all duration-200 hover:text-white hover:decoration-white/40"
-                >
-                  Go to Dashboard
-                </Link>
-              </motion.p>
             </motion.div>
           </div>
         </motion.div>
