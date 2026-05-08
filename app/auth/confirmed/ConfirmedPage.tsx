@@ -3,11 +3,21 @@
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { devLog } from "@/lib/auth/devLog";
+import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import {
+  describeAuthParams,
+  formatAuthError,
+  hasAccessToken,
+  hasAuthError,
+  hasRefreshToken,
+  hasTokenHash,
+  parseSupabaseAuthParams,
+  type SupabaseAuthParams,
+} from "@/lib/supabase/authHelpers";
 
 /* ─── Types ──────────────────────────────────────────────────────── */
 interface Particle {
@@ -28,11 +38,6 @@ interface Confetti {
   delay: number;
   color: string;
   size: number;
-}
-
-interface UrlAuthError {
-  code?: string;
-  description?: string;
 }
 
 type Phase = "verifying" | "authenticated" | "error";
@@ -69,52 +74,119 @@ const CONFETTI_COLORS = [
 ];
 
 /* ─── Auth flow constants ────────────────────────────────────────── */
-/** Where to send a successfully-confirmed user. */
-const ONBOARDING_HREF = "/onboarding";
-/** Delay before automatically forwarding the user. They can also click manually. */
+const APP_CALLBACK_DEEP_LINK = "promptly://auth/callback";
+/** Delay before attempting the deep-link redirect to the app. */
 const AUTO_REDIRECT_MS = 2000;
-/** If we're still without a session after this long, surface the error UI. */
-const VERIFICATION_GRACE_MS = 5000;
+/**
+ * How long to wait for PKCE code-exchange to populate a session before
+ * surfacing the error UI. Extended to 6 s to accommodate slow networks.
+ */
+const VERIFICATION_GRACE_MS = 6000;
 
-/** Read auth-error params Supabase can attach to the redirect (`?error=` or `#error=`). */
-function readUrlAuthError(): UrlAuthError | null {
-  if (typeof window === "undefined") return null;
-  const search = new URLSearchParams(window.location.search);
-  const hashSource = window.location.hash.startsWith("#")
-    ? window.location.hash.slice(1)
-    : "";
-  const hash = new URLSearchParams(hashSource);
-  const err = search.get("error") || hash.get("error");
-  if (!err) return null;
-  return {
-    code: search.get("error_code") || hash.get("error_code") || err,
-    description:
-      search.get("error_description") ||
-      hash.get("error_description") ||
-      "We couldn't confirm this email link.",
-  };
+/* ─── Session restoration (runs once on mount) ───────────────────── */
+async function restoreConfirmationSession(
+  params: SupabaseAuthParams,
+  onError: (msg: string) => void,
+): Promise<void> {
+  let supabase: ReturnType<typeof getSupabaseBrowserClient>;
+  try {
+    supabase = getSupabaseBrowserClient();
+  } catch {
+    devLog("[confirmed] supabase client unavailable");
+    onError("We couldn't verify your account.");
+    return;
+  }
+
+  // Already have a valid session? Nothing to do — useAuth() picks it up.
+  const {
+    data: { session: existing },
+  } = await supabase.auth.getSession();
+  if (existing?.user) {
+    devLog("[confirmed] verification success (existing session)");
+    return;
+  }
+
+  // Implicit flow: access_token + refresh_token present in URL
+  if (hasAccessToken(params) && hasRefreshToken(params)) {
+    devLog("[confirmed] setSession started (implicit flow)");
+    const { error } = await supabase.auth.setSession({
+      access_token: params.access_token!,
+      refresh_token: params.refresh_token!,
+    });
+    if (error) {
+      devLog("[confirmed] setSession failed");
+      onError(formatAuthError(error, "confirmation"));
+    } else {
+      devLog("[confirmed] setSession success");
+    }
+    return;
+  }
+
+  // OTP / token-hash flow: token_hash present in URL
+  if (hasTokenHash(params) && params.type) {
+    const validOtpTypes = [
+      "signup",
+      "email",
+      "recovery",
+      "email_change",
+      "magiclink",
+    ] as const;
+    type OtpType = (typeof validOtpTypes)[number];
+    const otpType: OtpType = validOtpTypes.includes(params.type as OtpType)
+      ? (params.type as OtpType)
+      : "email";
+
+    devLog("[confirmed] verifyOtp started (token_hash flow)", `type=${otpType}`);
+    const { error } = await supabase.auth.verifyOtp({
+      token_hash: params.token_hash!,
+      type: otpType,
+    });
+
+    if (error) {
+      devLog("[confirmed] verifyOtp failed");
+      // If the user was already confirmed, a fresh session may still be valid.
+      if (
+        error.message?.toLowerCase().includes("already") ||
+        (error as { code?: string }).code?.includes("already")
+      ) {
+        const {
+          data: { session: s },
+        } = await supabase.auth.getSession();
+        if (s?.user) {
+          devLog("[confirmed] verification success (already confirmed)");
+          return;
+        }
+      }
+      onError(formatAuthError(error, "confirmation"));
+    } else {
+      devLog("[confirmed] verification success (token_hash flow)");
+    }
+    return;
+  }
+
+  // PKCE flow: ?code= is handled automatically by detectSessionInUrl.
+  // Just let the grace-period timer decide the final state.
+  devLog("[confirmed] PKCE flow — awaiting detectSessionInUrl exchange");
 }
 
 /* ─── Component ──────────────────────────────────────────────────── */
 export function ConfirmedPage() {
   const prefersReducedMotion = useReducedMotion();
-  const router = useRouter();
-  const { status, user } = useAuth();
+  const { status } = useAuth();
 
   const [particles, setParticles] = useState<Particle[]>([]);
   const [confetti, setConfetti] = useState<Confetti[]>([]);
   const [mounted, setMounted] = useState(false);
-  const [urlError, setUrlError] = useState<UrlAuthError | null>(null);
+  const [sessionError, setSessionError] = useState<string | null>(null);
   const [graceElapsed, setGraceElapsed] = useState(false);
 
-  // Latches once we kick off the navigation, so neither a re-render nor the
-  // 2s timer can fire `router.replace` twice and create a back-button loop.
+  // Latch prevents duplicate deep-link navigations.
   const hasRedirectedRef = useRef(false);
 
   // ── Mount-only side effects ─────────────────────────────────────
   useEffect(() => {
     setMounted(true);
-    setUrlError(readUrlAuthError());
+    devLog("[confirmed] page loaded");
 
     setParticles(
       Array.from({ length: 22 }, (_, i) => ({
@@ -140,12 +212,25 @@ export function ConfirmedPage() {
       }))
     );
 
-    devLog("confirmation redirect detected", window.location.pathname);
+    const params = parseSupabaseAuthParams();
+    devLog("[confirmed] search params found:", window.location.search || "none");
+    devLog("[confirmed] hash params found:", window.location.hash ? "yes" : "none");
+    devLog("[confirmed] params summary:", describeAuthParams(params));
+
+    if (hasAuthError(params)) {
+      devLog("[confirmed] URL error detected:", params.error);
+      const errMsg = params.error_description
+        ? params.error_description.replace(/_/g, " ")
+        : "We couldn't verify your account.";
+      setSessionError(errMsg);
+      return;
+    }
+
+    void restoreConfirmationSession(params, setSessionError);
   }, []);
 
   // ── Verification grace window ───────────────────────────────────
-  // Give Supabase's PKCE code-exchange a fair window to populate the
-  // session before we admit failure to the user.
+  // Covers the PKCE code-exchange path which relies on detectSessionInUrl.
   useEffect(() => {
     if (status === "authenticated") return;
     const t = window.setTimeout(() => setGraceElapsed(true), VERIFICATION_GRACE_MS);
@@ -157,30 +242,29 @@ export function ConfirmedPage() {
     if (status !== "authenticated") return;
     if (hasRedirectedRef.current) return;
 
+    devLog("[confirmed] verification success — scheduling app redirect");
+
     const t = window.setTimeout(() => {
       if (hasRedirectedRef.current) return;
       hasRedirectedRef.current = true;
-      devLog("onboarding redirect triggered", user?.email ? `user=${user.email}` : "");
-      router.replace(ONBOARDING_HREF);
+      devLog("[confirmed] redirect attempted");
+      window.location.href = APP_CALLBACK_DEEP_LINK;
     }, AUTO_REDIRECT_MS);
 
     return () => window.clearTimeout(t);
-  }, [status, router, user]);
+  }, [status]);
 
   // ── Derived render phase ────────────────────────────────────────
   const phase: Phase = useMemo(() => {
-    if (urlError) return "error";
+    if (sessionError) return "error";
     if (status === "authenticated") return "authenticated";
     if (status === "unauthenticated" && graceElapsed) return "error";
     return "verifying";
-  }, [status, urlError, graceElapsed]);
+  }, [status, sessionError, graceElapsed]);
 
-  const handleManualContinue = () => {
-    if (hasRedirectedRef.current) return;
-    hasRedirectedRef.current = true;
-    devLog("onboarding redirect triggered (manual)");
-    // Link's default navigation will run; setting the latch first prevents
-    // the auto-redirect timer from firing a second navigation behind it.
+  const handleOpenApp = () => {
+    devLog("[confirmed] redirect attempted (manual)");
+    window.location.href = APP_CALLBACK_DEEP_LINK;
   };
 
   return (
@@ -225,7 +309,7 @@ export function ConfirmedPage() {
           }}
         />
 
-        {/* Center subtle glow */}
+        {/* Centre subtle glow */}
         <div
           className="absolute left-1/2 top-1/2 h-[700px] w-[700px] -translate-x-1/2 -translate-y-1/2 rounded-full"
           style={{
@@ -276,7 +360,7 @@ export function ConfirmedPage() {
         />
       </div>
 
-      {/* ── Confetti burst (only after successful verification) ── */}
+      {/* ── Confetti burst (success phase only) ─────────────────── */}
       {mounted && !prefersReducedMotion && phase === "authenticated" && (
         <div
           className="pointer-events-none absolute inset-x-0 top-0 overflow-hidden"
@@ -349,9 +433,7 @@ export function ConfirmedPage() {
 
           {/* Floating mascot */}
           <motion.div
-            animate={
-              prefersReducedMotion ? {} : { y: [0, -14, 0] }
-            }
+            animate={prefersReducedMotion ? {} : { y: [0, -14, 0] }}
             transition={{
               duration: 3.8,
               repeat: Infinity,
@@ -405,12 +487,15 @@ export function ConfirmedPage() {
               {phase === "authenticated" && (
                 <AuthenticatedContent
                   key="authenticated"
-                  onContinueClick={handleManualContinue}
+                  onOpenApp={handleOpenApp}
                 />
               )}
 
               {phase === "error" && (
-                <ErrorContent key="error" error={urlError} />
+                <ErrorContent
+                  key="error"
+                  message={sessionError}
+                />
               )}
             </AnimatePresence>
           </div>
@@ -420,7 +505,7 @@ export function ConfirmedPage() {
   );
 }
 
-/* ─── Phase: verifying (initial state during PKCE exchange) ─────── */
+/* ─── Phase: verifying ───────────────────────────────────────────── */
 function VerifyingContent() {
   return (
     <motion.div
@@ -443,12 +528,10 @@ function VerifyingContent() {
       {/* Spinner */}
       <Spinner />
 
-      {/* Heading */}
       <h1 className="text-[24px] font-bold leading-[1.18] tracking-tight text-white sm:text-[26px]">
         Verifying your email…
       </h1>
 
-      {/* Sub copy */}
       <p className="text-[13.5px] leading-[1.7] text-[#5E6E8A]">
         Hang tight — this only takes a moment.
       </p>
@@ -456,12 +539,8 @@ function VerifyingContent() {
   );
 }
 
-/* ─── Phase: authenticated (the original celebration UI) ────────── */
-function AuthenticatedContent({
-  onContinueClick,
-}: {
-  onContinueClick: () => void;
-}) {
+/* ─── Phase: authenticated ───────────────────────────────────────── */
+function AuthenticatedContent({ onOpenApp }: { onOpenApp: () => void }) {
   return (
     <motion.div
       key="authenticated"
@@ -530,12 +609,11 @@ function AuthenticatedContent({
         }}
       />
 
-      {/* CTA — manual continue (auto-redirect happens in parallel) */}
+      {/* Primary CTA — open Promptly app */}
       <motion.div variants={itemVariant} className="w-full">
-        <Link
-          href={ONBOARDING_HREF}
-          onClick={onContinueClick}
-          prefetch
+        <button
+          type="button"
+          onClick={onOpenApp}
           className="group relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-2xl px-5 py-[14px] text-[14px] font-semibold leading-snug text-white transition-transform duration-200 hover:scale-[1.025] active:scale-[0.975] sm:text-[15px]"
           style={{
             background:
@@ -564,7 +642,7 @@ function AuthenticatedContent({
           />
 
           <span className="relative text-center text-pretty">
-            Return to the app to start your journey now
+            Open Promptly
           </span>
           <svg
             className="relative h-4 w-4 shrink-0 transition-transform duration-300 group-hover:translate-x-0.5"
@@ -580,14 +658,34 @@ function AuthenticatedContent({
               d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"
             />
           </svg>
-        </Link>
+        </button>
       </motion.div>
+
+      {/* Download hint */}
+      <motion.p
+        variants={itemVariant}
+        className="text-[12px] text-[#3A4460]"
+      >
+        App not opening?{" "}
+        <a
+          href="https://apps.apple.com/app/promptly"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-[#5E6E8A] underline underline-offset-4 decoration-white/20 transition-colors hover:decoration-white/50"
+        >
+          Download Promptly
+        </a>
+      </motion.p>
     </motion.div>
   );
 }
 
-/* ─── Phase: error (URL error or session never arrived) ─────────── */
-function ErrorContent({ error }: { error: UrlAuthError | null }) {
+/* ─── Phase: error ───────────────────────────────────────────────── */
+function ErrorContent({ message }: { message: string | null }) {
+  const displayMessage =
+    message ??
+    "Your confirmation link may have expired or already been used. Try opening the most recent email we sent you, or request a new one.";
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
@@ -622,8 +720,7 @@ function ErrorContent({ error }: { error: UrlAuthError | null }) {
       </h1>
 
       <p className="text-[13.5px] leading-[1.7] text-[#5E6E8A] text-balance">
-        {error?.description ??
-          "Your confirmation link may have expired or already been used. Try opening the most recent email we sent you, or request a new one."}
+        {displayMessage}
       </p>
 
       <div
@@ -644,7 +741,7 @@ function ErrorContent({ error }: { error: UrlAuthError | null }) {
   );
 }
 
-/* ─── Tiny spinner in the brand colour ──────────────────────────── */
+/* ─── Tiny spinner in brand colour ──────────────────────────────── */
 function Spinner() {
   return (
     <span

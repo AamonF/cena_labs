@@ -13,6 +13,16 @@ import type { ChangeEvent, FormEvent } from "react";
 
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { devLog } from "@/lib/auth/devLog";
+import {
+  describeAuthParams,
+  formatAuthError,
+  hasAccessToken,
+  hasAuthError,
+  hasRefreshToken,
+  hasTokenHash,
+  isRecoveryType,
+  parseSupabaseAuthParams,
+} from "@/lib/supabase/authHelpers";
 
 /* ─── Constants ──────────────────────────────────────────────────── */
 const DEEP_LINK_BASE = "promptly://auth/reset-password";
@@ -23,12 +33,12 @@ const EASE_SPRING = [0.175, 0.885, 0.32, 1.1] as [number, number, number, number
 
 /* ─── Types ──────────────────────────────────────────────────────── */
 type Phase =
-  | "loading"     // Parsing URL params
-  | "redirecting" // Attempting deep link into app
-  | "form"        // Web fallback — show password form
-  | "submitting"  // Updating password via Supabase
-  | "success"     // Password updated
-  | "link-error"; // Link invalid, expired, or missing
+  | "loading"      // Parsing URL params
+  | "redirecting"  // Attempting deep link into app
+  | "form"         // Web fallback — show password form
+  | "submitting"   // Updating password via Supabase
+  | "success"      // Password updated
+  | "link-error";  // Link invalid, expired, or missing
 
 interface UrlParams {
   raw: string;
@@ -65,30 +75,19 @@ function parseUrlParams(): UrlParams {
     return { raw: "", hasRecovery: false, hasError: false, errorDescription: "" };
   }
 
-  const search = new URLSearchParams(window.location.search);
-  const hashStr = window.location.hash.startsWith("#")
-    ? window.location.hash.slice(1)
-    : "";
-  const hash = new URLSearchParams(hashStr);
+  const p = parseSupabaseAuthParams();
 
-  const get = (key: string) => search.get(key) ?? hash.get(key) ?? undefined;
-
-  const code       = get("code");
-  const tokenHash  = get("token_hash");
-  const type       = get("type");
-  const accessToken = get("access_token");
-  const error      = get("error");
-  const errDesc    = get("error_description");
-
-  const hasError = !!error;
+  const hasError = hasAuthError(p);
   const errorDescription = hasError
-    ? (errDesc?.replace(/_/g, " ") ?? "An error occurred with this link.")
+    ? ((p.error_description ?? p.error ?? "An error occurred.").replace(/_/g, " "))
     : "";
 
   const hasRecovery = !!(
-    code ||
-    (tokenHash && type === "recovery") ||
-    (accessToken && type === "recovery")
+    window.location.search.includes("code=") ||
+    (hasTokenHash(p) && isRecoveryType(p)) ||
+    (hasAccessToken(p) && isRecoveryType(p)) ||
+    // Some Supabase setups omit type= but still include access_token + refresh_token
+    (hasAccessToken(p) && hasRefreshToken(p))
   );
 
   return {
@@ -96,8 +95,8 @@ function parseUrlParams(): UrlParams {
     hasRecovery,
     hasError,
     errorDescription,
-    tokenHash,
-    type,
+    tokenHash: p.token_hash,
+    type: p.type,
   };
 }
 
@@ -144,11 +143,11 @@ const staggerItem = {
 export function ResetPasswordPage() {
   const prefersReducedMotion = useReducedMotion();
 
-  const [phase,    setPhase]    = useState<Phase>("loading");
-  const [mounted,  setMounted]  = useState(false);
+  const [phase,     setPhase]     = useState<Phase>("loading");
+  const [mounted,   setMounted]   = useState(false);
   const [particles, setParticles] = useState<Particle[]>([]);
   const [urlParams, setUrlParams] = useState<UrlParams | null>(null);
-  const [pwReady,  setPwReady]  = useState(false);
+  const [pwReady,   setPwReady]   = useState(false);
 
   const [form, setForm] = useState<FormState>({
     password:      "",
@@ -160,16 +159,21 @@ export function ResetPasswordPage() {
     submitError:   "",
   });
 
-  const timerRef     = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const timerRef      = useRef<ReturnType<typeof setTimeout> | null>(null);
   const redirectedRef = useRef(false);
 
   /* ── Mount: parse URL, kick off redirect attempt ─────────────── */
   useEffect(() => {
     setMounted(true);
-    devLog("reset password page loaded");
+    devLog("[reset] page loaded");
 
     const params = parseUrlParams();
+    const authParams = parseSupabaseAuthParams();
     setUrlParams(params);
+
+    devLog("[reset] search params found:", window.location.search || "none");
+    devLog("[reset] hash params found:", window.location.hash ? "yes" : "none");
+    devLog("[reset] params summary:", describeAuthParams(authParams));
 
     setParticles(
       Array.from({ length: 18 }, (_, i) => ({
@@ -184,31 +188,31 @@ export function ResetPasswordPage() {
     );
 
     if (params.hasError) {
-      devLog("invalid reset link — URL error", params.errorDescription);
+      devLog("[reset] invalid reset link — URL error:", params.errorDescription);
       setPhase("link-error");
       return;
     }
 
     if (!params.hasRecovery) {
-      devLog("recovery params missing");
+      devLog("[reset] recovery params missing");
       setPhase("link-error");
       return;
     }
 
-    devLog("recovery params found");
+    devLog("[reset] recovery params found");
 
-    // Attempt deep link to the mobile app
+    // Attempt deep link to the mobile app first
     setPhase("redirecting");
     if (!redirectedRef.current) {
       redirectedRef.current = true;
       const deepLink = buildDeepLink(params.raw);
-      devLog("redirect attempted", deepLink);
+      devLog("[reset] redirect attempted");
       window.location.href = deepLink;
     }
 
     // Fallback: show web form after timeout
     timerRef.current = setTimeout(() => {
-      devLog("redirect fallback — showing web form");
+      devLog("[reset] redirect fallback — showing web form");
       setPhase("form");
     }, REDIRECT_TIMEOUT_MS);
 
@@ -217,9 +221,9 @@ export function ResetPasswordPage() {
     };
   }, []);
 
-  /* ── Auth state listener: wait for PASSWORD_RECOVERY ────────── */
+  /* ── Auth state listener + session restoration ───────────────── */
   useEffect(() => {
-    let supabase: ReturnType<typeof getSupabaseBrowserClient> | null = null;
+    let supabase: ReturnType<typeof getSupabaseBrowserClient>;
     try {
       supabase = getSupabaseBrowserClient();
     } catch {
@@ -227,22 +231,52 @@ export function ResetPasswordPage() {
     }
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      devLog(`auth event: ${event}`);
+      devLog(`[reset] auth event: ${event}`);
       if (event === "PASSWORD_RECOVERY") {
-        devLog("password recovery session established");
+        devLog("[reset] password recovery session established");
         setPwReady(true);
       }
     });
 
-    // For token_hash recovery (non-PKCE), manually exchange
+    // Actively restore the session so the web-form path works reliably.
     void (async () => {
-      const params = parseUrlParams();
-      if (params.tokenHash && params.type === "recovery" && supabase) {
+      const p = parseSupabaseAuthParams();
+
+      // Check if a valid session already exists
+      const { data: { session: existing } } = await supabase.auth.getSession();
+      if (existing?.user) {
+        devLog("[reset] existing recovery session found");
+        setPwReady(true);
+        return;
+      }
+
+      // access_token + refresh_token flow (implicit)
+      if (hasAccessToken(p) && hasRefreshToken(p)) {
+        devLog("[reset] setSession started (implicit recovery flow)");
+        const { error } = await supabase.auth.setSession({
+          access_token: p.access_token!,
+          refresh_token: p.refresh_token!,
+        });
+        if (error) {
+          devLog("[reset] setSession failed");
+        } else {
+          devLog("[reset] setSession success");
+          setPwReady(true);
+        }
+        return;
+      }
+
+      // token_hash recovery flow (OTP)
+      if (hasTokenHash(p) && isRecoveryType(p)) {
+        devLog("[reset] verifyOtp started (token_hash recovery)");
         const { error } = await supabase.auth.verifyOtp({
-          token_hash: params.tokenHash,
+          token_hash: p.token_hash!,
           type: "recovery",
         });
-        if (error) devLog("verifyOtp error", error.message);
+        if (error) {
+          devLog("[reset] verifyOtp error:", error.message);
+        }
+        // PASSWORD_RECOVERY event will fire and set pwReady via the listener above.
       }
     })();
 
@@ -264,8 +298,8 @@ export function ResetPasswordPage() {
     const val = e.target.value;
     setForm((f) => ({
       ...f,
-      confirm:       val,
-      confirmError:  f.confirmError ? validateConfirm(f.password, val) : "",
+      confirm:      val,
+      confirmError: f.confirmError ? validateConfirm(f.password, val) : "",
     }));
   }, []);
 
@@ -286,12 +320,12 @@ export function ResetPasswordPage() {
       const cErr = validateConfirm(form.password, form.confirm);
 
       if (pErr || cErr) {
-        devLog("password validation failed");
+        devLog("[reset] password validation failed");
         setForm((f) => ({ ...f, passwordError: pErr, confirmError: cErr }));
         return;
       }
 
-      devLog("password update started");
+      devLog("[reset] update password started");
       setPhase("submitting");
       setForm((f) => ({ ...f, submitError: "" }));
 
@@ -302,34 +336,50 @@ export function ResetPasswordPage() {
         setPhase("form");
         setForm((f) => ({
           ...f,
-          submitError: "Authentication service unavailable. Please try again.",
+          submitError:
+            "We couldn't establish a secure reset session. Please reopen the latest reset email.",
         }));
         return;
+      }
+
+      // If the recovery session isn't ready yet, verify we have a valid one.
+      if (!pwReady) {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.user) {
+          devLog("[reset] no valid session at submit time");
+          setPhase("form");
+          setForm((f) => ({
+            ...f,
+            submitError:
+              "We couldn't establish a secure reset session. Please reopen the latest reset email.",
+          }));
+          return;
+        }
       }
 
       const { error } = await supabase.auth.updateUser({ password: form.password });
 
       if (error) {
-        devLog("password update failed", error.message);
+        devLog("[reset] update password failed");
         setPhase("form");
         setForm((f) => ({
           ...f,
-          submitError: error.message || "Failed to update password. Please try again.",
+          submitError: formatAuthError(error, "reset"),
         }));
         return;
       }
 
-      devLog("password update successful");
+      devLog("[reset] update password success");
       setPhase("success");
     },
-    [form.password, form.confirm]
+    [form.password, form.confirm, pwReady]
   );
 
   /* ── Manual retry deep link ──────────────────────────────────── */
   const handleOpenApp = useCallback(() => {
     if (!urlParams) return;
     const deepLink = buildDeepLink(urlParams.raw);
-    devLog("redirect attempted (manual)", deepLink);
+    devLog("[reset] redirect attempted (manual)");
     window.location.href = deepLink;
   }, [urlParams]);
 
@@ -826,7 +876,7 @@ function FormContent({
           )}
         </button>
 
-        {/* Session status note (while PASSWORD_RECOVERY hasn't fired yet) */}
+        {/* Session status note */}
         {!pwReady && !isSubmitting && (
           <p className="text-center text-[11.5px] text-[#3A4460]">
             <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-purple-500/60 mr-1.5 align-middle" />
@@ -886,7 +936,7 @@ function SuccessContent({ onOpenApp }: { onOpenApp: () => void }) {
         variants={staggerItem}
         className="text-[13.5px] leading-[1.75] text-[#5E6E8A] text-balance"
       >
-        You can now return to Promptly and sign in with your new password.
+        Password updated successfully. Please sign in to Promptly with your new password.
       </motion.p>
 
       <motion.div variants={staggerItem} className="w-full">
@@ -914,7 +964,7 @@ function SuccessContent({ onOpenApp }: { onOpenApp: () => void }) {
           href="/support"
           className="flex w-full items-center justify-center gap-1.5 rounded-2xl border border-white/[0.08] bg-white/[0.04] px-5 py-[13px] text-[13.5px] font-medium text-[#9EB4D8] transition-colors duration-200 hover:bg-white/[0.07] hover:text-white"
         >
-          Back to sign in
+          Back to support
         </Link>
       </motion.div>
     </motion.div>
@@ -923,6 +973,11 @@ function SuccessContent({ onOpenApp }: { onOpenApp: () => void }) {
 
 /* ─── Phase: link-error ──────────────────────────────────────────── */
 function LinkErrorContent({ description }: { description?: string }) {
+  const displayDescription =
+    description && description.length > 5
+      ? description
+      : "This password reset link is invalid or has expired. Please request a new one from Promptly.";
+
   return (
     <motion.div
       variants={phaseVariant}
@@ -951,9 +1006,7 @@ function LinkErrorContent({ description }: { description?: string }) {
       </h1>
 
       <p className="text-[13.5px] leading-[1.75] text-[#5E6E8A] text-balance">
-        {description && description.length > 5
-          ? description
-          : "This password reset link is invalid or has expired. Please request a new password reset email from Promptly."}
+        {displayDescription}
       </p>
 
       <div className="w-full">
@@ -1003,8 +1056,8 @@ function StatusPill({
   pulse?: boolean;
 }) {
   const colors = {
-    purple: "border-purple-500/30 bg-purple-500/[0.12] text-purple-400 dot-bg-purple-400",
-    blue:   "border-blue-500/30   bg-blue-500/[0.12]   text-blue-400   dot-bg-blue-400",
+    purple: "border-purple-500/30 bg-purple-500/[0.12] text-purple-400",
+    blue:   "border-blue-500/30   bg-blue-500/[0.12]   text-blue-400",
     green:  "border-emerald-500/30 bg-emerald-500/[0.12] text-emerald-400",
   };
   const dotColors = {
