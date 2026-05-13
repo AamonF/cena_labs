@@ -25,7 +25,7 @@ import {
 } from "@/lib/supabase/authHelpers";
 
 /* ─── Constants ──────────────────────────────────────────────────── */
-const DEEP_LINK_BASE = "promptly://auth/reset-password";
+const DEEP_LINK_BASE = "lumenix://auth/reset-password";
 const REDIRECT_TIMEOUT_MS = 3500;
 const MIN_PW_LENGTH = 5;
 const EASE_SMOOTH = [0.4, 0, 0.2, 1] as [number, number, number, number];
@@ -389,10 +389,10 @@ export function ResetPasswordPage() {
     : "/images/thinking-mascot.png";
 
   const mascotAlt = phase === "success"
-    ? "Promptly mascot celebrating password reset"
+    ? "Lumenix mascot celebrating password reset"
     : phase === "link-error"
-    ? "Promptly mascot looking puzzled"
-    : "Promptly mascot thinking";
+    ? "Lumenix mascot looking puzzled"
+    : "Lumenix mascot thinking";
 
   /* ── Render ──────────────────────────────────────────────────── */
   return (
@@ -613,7 +613,7 @@ function RedirectingContent({
       role="status"
       aria-live="polite"
     >
-      <StatusPill color="purple" pulse label="Opening Promptly" />
+      <StatusPill color="purple" pulse label="Opening Lumenix" />
 
       {/* Animated dots */}
       <div className="flex items-center gap-2" aria-hidden>
@@ -628,10 +628,10 @@ function RedirectingContent({
       </div>
 
       <h1 className="text-[24px] font-bold leading-snug tracking-tight text-white sm:text-[26px]">
-        Opening Promptly…
+        Opening Lumenix…
       </h1>
       <p className="text-[13.5px] leading-[1.7] text-[#5E6E8A] text-balance">
-        We&apos;re redirecting you to the Promptly app to complete your password reset.
+        We&apos;re redirecting you to the Lumenix app to complete your password reset.
       </p>
 
       <AnimatePresence>
@@ -644,7 +644,7 @@ function RedirectingContent({
           >
             <Divider />
             <p className="text-[12.5px] text-[#5E6E8A]">
-              Promptly didn&apos;t open automatically?
+              Lumenix didn&apos;t open automatically?
             </p>
             <button
               type="button"
@@ -658,17 +658,17 @@ function RedirectingContent({
               }}
             >
               <ShimmerOverlay />
-              <span className="relative">Open Promptly</span>
+              <span className="relative">Open Lumenix</span>
               <PhoneIcon className="relative h-4 w-4 shrink-0" />
             </button>
             <a
-              href="https://apps.apple.com/app/promptly"
+              href="https://apps.apple.com/app/lumenix"
               target="_blank"
               rel="noopener noreferrer"
               className="flex w-full items-center justify-center gap-2 rounded-2xl border border-white/[0.10] bg-white/[0.05] px-5 py-[13px] text-[13.5px] font-medium text-[#9EB4D8] transition-colors duration-200 hover:bg-white/[0.08] hover:text-white"
             >
               <DownloadIcon className="h-4 w-4 shrink-0" />
-              Download Promptly
+              Download Lumenix
             </a>
             <Link
               href="/support"
@@ -723,7 +723,7 @@ function FormContent({
           Create new password
         </h1>
         <p className="text-[13.5px] leading-[1.7] text-[#5E6E8A] text-balance">
-          Choose a strong password for your Promptly account. You&apos;ll use it to sign in.
+          Choose a strong password for your Lumenix account. You&apos;ll use it to sign in.
         </p>
       </motion.div>
 
@@ -893,7 +893,7 @@ function FormContent({
           className="flex w-full items-center justify-center gap-2 rounded-2xl border border-white/[0.10] bg-white/[0.05] px-5 py-[13px] text-[13.5px] font-medium text-[#9EB4D8] transition-colors duration-200 hover:bg-white/[0.08] hover:text-white"
         >
           <PhoneIcon className="h-4 w-4 shrink-0" />
-          Already have the app? Open Promptly
+          Already have the app? Open Lumenix
         </button>
       </motion.div>
     </motion.div>
@@ -936,7 +936,7 @@ function SuccessContent({ onOpenApp }: { onOpenApp: () => void }) {
         variants={staggerItem}
         className="text-[13.5px] leading-[1.75] text-[#5E6E8A] text-balance"
       >
-        Password updated successfully. Please sign in to Promptly with your new password.
+        Password updated successfully. Please sign in to Lumenix with your new password.
       </motion.p>
 
       <motion.div variants={staggerItem} className="w-full">
@@ -956,7 +956,7 @@ function SuccessContent({ onOpenApp }: { onOpenApp: () => void }) {
           }}
         >
           <ShimmerOverlay />
-          <span className="relative">Open Promptly</span>
+          <span className="relative">Open Lumenix</span>
           <PhoneIcon className="relative h-4 w-4 shrink-0" />
         </button>
 
@@ -976,7 +976,7 @@ function LinkErrorContent({ description }: { description?: string }) {
   const displayDescription =
     description && description.length > 5
       ? description
-      : "This password reset link is invalid or has expired. Please request a new one from Promptly.";
+      : "This password reset link is invalid or has expired. Please request a new one from Lumenix.";
 
   return (
     <motion.div
@@ -1015,7 +1015,7 @@ function LinkErrorContent({ description }: { description?: string }) {
 
       <div className="flex w-full flex-col gap-3">
         <a
-          href="promptly://"
+          href="lumenix://"
           className="group relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-2xl px-5 py-[13px] text-[14px] font-semibold text-white transition-transform duration-200 hover:scale-[1.025] active:scale-[0.975]"
           style={{
             background:
@@ -1025,7 +1025,7 @@ function LinkErrorContent({ description }: { description?: string }) {
           }}
         >
           <ShimmerOverlay />
-          <span className="relative">Back to Promptly</span>
+          <span className="relative">Back to Lumenix</span>
           <PhoneIcon className="relative h-4 w-4 shrink-0" />
         </a>
 
@@ -1038,7 +1038,7 @@ function LinkErrorContent({ description }: { description?: string }) {
       </div>
 
       <p className="text-[12px] text-[#3A4460]">
-        To request a new link, open Promptly and use{" "}
+        To request a new link, open Lumenix and use{" "}
         <em className="not-italic text-[#5E6E8A]">Forgot password</em> on the sign-in screen.
       </p>
     </motion.div>

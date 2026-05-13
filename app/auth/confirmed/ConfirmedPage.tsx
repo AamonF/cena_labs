@@ -74,7 +74,7 @@ const CONFETTI_COLORS = [
 ];
 
 /* ─── Auth flow constants ────────────────────────────────────────── */
-const APP_CALLBACK_DEEP_LINK = "promptly://auth/callback";
+const APP_CALLBACK_DEEP_LINK = "lumenix://auth/callback";
 /** Delay before attempting the deep-link redirect to the app. */
 const AUTO_REDIRECT_MS = 2000;
 /**
@@ -84,8 +84,17 @@ const AUTO_REDIRECT_MS = 2000;
 const VERIFICATION_GRACE_MS = 6000;
 
 /* ─── Session restoration (runs once on mount) ───────────────────── */
+/**
+ * Attempt to exchange the URL params for a Supabase session (or confirm that
+ * verification already succeeded).  Calls `onSuccess` as soon as we have
+ * positive confirmation — even when Supabase does not return a full session
+ * (e.g. when "Return session after email confirmation" is disabled in the
+ * Supabase dashboard).  Only calls `onError` when verification explicitly
+ * fails.
+ */
 async function restoreConfirmationSession(
   params: SupabaseAuthParams,
+  onSuccess: () => void,
   onError: (msg: string) => void,
 ): Promise<void> {
   let supabase: ReturnType<typeof getSupabaseBrowserClient>;
@@ -97,12 +106,13 @@ async function restoreConfirmationSession(
     return;
   }
 
-  // Already have a valid session? Nothing to do — useAuth() picks it up.
+  // Already have a valid session? Signal success — useAuth() will also pick it up.
   const {
     data: { session: existing },
   } = await supabase.auth.getSession();
   if (existing?.user) {
     devLog("[confirmed] verification success (existing session)");
+    onSuccess();
     return;
   }
 
@@ -118,6 +128,7 @@ async function restoreConfirmationSession(
       onError(formatAuthError(error, "confirmation"));
     } else {
       devLog("[confirmed] setSession success");
+      onSuccess();
     }
     return;
   }
@@ -143,30 +154,42 @@ async function restoreConfirmationSession(
     });
 
     if (error) {
-      devLog("[confirmed] verifyOtp failed");
-      // If the user was already confirmed, a fresh session may still be valid.
+      devLog("[confirmed] verifyOtp failed", error.message);
+
+      // "Already confirmed" means the account IS verified — treat as success.
+      // Check for a live session first, but succeed either way.
       if (
         error.message?.toLowerCase().includes("already") ||
         (error as { code?: string }).code?.includes("already")
       ) {
-        const {
-          data: { session: s },
-        } = await supabase.auth.getSession();
-        if (s?.user) {
-          devLog("[confirmed] verification success (already confirmed)");
-          return;
-        }
+        devLog("[confirmed] already confirmed — treating as success");
+        onSuccess();
+        return;
       }
+
       onError(formatAuthError(error, "confirmation"));
     } else {
+      // verifyOtp succeeded — the email is confirmed regardless of whether
+      // Supabase also returned a session (depends on project settings).
       devLog("[confirmed] verification success (token_hash flow)");
+      onSuccess();
     }
     return;
   }
 
-  // PKCE flow: ?code= is handled automatically by detectSessionInUrl.
-  // Just let the grace-period timer decide the final state.
-  devLog("[confirmed] PKCE flow — awaiting detectSessionInUrl exchange");
+  // PKCE flow: ?code= is consumed automatically by detectSessionInUrl.
+  // Poll getSession once to catch a session that was exchanged synchronously,
+  // then let the grace-period timer + onAuthStateChange cover async cases.
+  devLog("[confirmed] PKCE / unknown flow — checking session");
+  const {
+    data: { session: pkceSession },
+  } = await supabase.auth.getSession();
+  if (pkceSession?.user) {
+    devLog("[confirmed] PKCE session available immediately");
+    onSuccess();
+  } else {
+    devLog("[confirmed] PKCE flow — awaiting detectSessionInUrl exchange");
+  }
 }
 
 /* ─── Component ──────────────────────────────────────────────────── */
@@ -179,6 +202,9 @@ export function ConfirmedPage() {
   const [mounted, setMounted] = useState(false);
   const [sessionError, setSessionError] = useState<string | null>(null);
   const [graceElapsed, setGraceElapsed] = useState(false);
+  // Set to true as soon as restoreConfirmationSession signals success —
+  // independent of whether AuthProvider also has an active session.
+  const [verified, setVerified] = useState(false);
 
   // Latch prevents duplicate deep-link navigations.
   const hasRedirectedRef = useRef(false);
@@ -226,20 +252,27 @@ export function ConfirmedPage() {
       return;
     }
 
-    void restoreConfirmationSession(params, setSessionError);
+    void restoreConfirmationSession(
+      params,
+      () => setVerified(true),
+      setSessionError,
+    );
   }, []);
 
   // ── Verification grace window ───────────────────────────────────
   // Covers the PKCE code-exchange path which relies on detectSessionInUrl.
+  // Cancel early if we already have a positive signal.
   useEffect(() => {
-    if (status === "authenticated") return;
+    if (status === "authenticated" || verified) return;
     const t = window.setTimeout(() => setGraceElapsed(true), VERIFICATION_GRACE_MS);
     return () => window.clearTimeout(t);
-  }, [status]);
+  }, [status, verified]);
 
   // ── Auto-redirect on success ────────────────────────────────────
+  // Trigger on either a full session or a direct verification signal.
+  const isSuccess = status === "authenticated" || verified;
   useEffect(() => {
-    if (status !== "authenticated") return;
+    if (!isSuccess) return;
     if (hasRedirectedRef.current) return;
 
     devLog("[confirmed] verification success — scheduling app redirect");
@@ -252,15 +285,19 @@ export function ConfirmedPage() {
     }, AUTO_REDIRECT_MS);
 
     return () => window.clearTimeout(t);
-  }, [status]);
+  }, [isSuccess]);
 
   // ── Derived render phase ────────────────────────────────────────
   const phase: Phase = useMemo(() => {
     if (sessionError) return "error";
-    if (status === "authenticated") return "authenticated";
-    if (status === "unauthenticated" && graceElapsed) return "error";
+    // Success: either a full session exists OR verifyOtp/setSession succeeded
+    // (Supabase may confirm an email without returning a session depending on
+    // project settings).
+    if (status === "authenticated" || verified) return "authenticated";
+    // Only show error after the grace window AND only if we have no positive signal.
+    if (status === "unauthenticated" && graceElapsed && !verified) return "error";
     return "verifying";
-  }, [status, sessionError, graceElapsed]);
+  }, [status, sessionError, graceElapsed, verified]);
 
   const handleOpenApp = () => {
     devLog("[confirmed] redirect attempted (manual)");
@@ -442,7 +479,7 @@ export function ConfirmedPage() {
           >
             <Image
               src="/images/celebrate-mascot.png"
-              alt="Promptly mascot celebrating your email verification"
+              alt="Lumenix mascot celebrating your email verification"
               width={148}
               height={148}
               priority
@@ -578,8 +615,7 @@ function AuthenticatedContent({ onOpenApp }: { onOpenApp: () => void }) {
         variants={itemVariant}
         className="text-[28px] font-bold leading-[1.18] tracking-tight text-white sm:text-[32px]"
       >
-        Welcome to Promptly{" "}
-        <span aria-label="lightning bolt">⚡</span>
+        Email verified
       </motion.h1>
 
       {/* Subheading */}
@@ -587,7 +623,7 @@ function AuthenticatedContent({ onOpenApp }: { onOpenApp: () => void }) {
         variants={itemVariant}
         className="text-[15px] font-medium leading-snug text-[#9EB4D8]"
       >
-        Your AI learning journey is ready to begin.
+        Your account is ready.
       </motion.p>
 
       {/* Description */}
@@ -595,8 +631,7 @@ function AuthenticatedContent({ onOpenApp }: { onOpenApp: () => void }) {
         variants={itemVariant}
         className="text-[13.5px] leading-[1.7] text-[#5E6E8A] text-balance"
       >
-        Learn prompting, agents, automation, workflows, and real-world AI
-        skills through interactive progression.
+        You can return to the Lumenix app and sign in.
       </motion.p>
 
       {/* Divider */}
@@ -609,7 +644,7 @@ function AuthenticatedContent({ onOpenApp }: { onOpenApp: () => void }) {
         }}
       />
 
-      {/* Primary CTA — open Promptly app */}
+      {/* Primary CTA — open Lumenix app */}
       <motion.div variants={itemVariant} className="w-full">
         <button
           type="button"
@@ -642,7 +677,7 @@ function AuthenticatedContent({ onOpenApp }: { onOpenApp: () => void }) {
           />
 
           <span className="relative text-center text-pretty">
-            Open Promptly
+            Open Lumenix
           </span>
           <svg
             className="relative h-4 w-4 shrink-0 transition-transform duration-300 group-hover:translate-x-0.5"
@@ -668,12 +703,12 @@ function AuthenticatedContent({ onOpenApp }: { onOpenApp: () => void }) {
       >
         App not opening?{" "}
         <a
-          href="https://apps.apple.com/app/promptly"
+          href="https://apps.apple.com/app/lumenix"
           target="_blank"
           rel="noopener noreferrer"
           className="text-[#5E6E8A] underline underline-offset-4 decoration-white/20 transition-colors hover:decoration-white/50"
         >
-          Download Promptly
+          Download Lumenix
         </a>
       </motion.p>
     </motion.div>

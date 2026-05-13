@@ -1,6 +1,6 @@
 import type { LegalDocument } from "@/data/types";
 
-/** Canonical “last updated” for the Cena Labs legal pack used by Promptly. */
+/** Canonical “last updated” for the Cena Labs legal pack. */
 export const CENA_LABS_LEGAL_LAST_UPDATED = "May 7, 2026";
 
 export const cenaLabsTerms: LegalDocument = {
@@ -670,12 +670,12 @@ Moderation decisions may be made automatically or manually.`,
   ],
 };
 
-/** Footer / cross-links for Promptly (paths under /apps/promptly/…). */
-export const promptlyLegalRoutes = [
-  { href: "/apps/promptly/terms", label: "Terms of Service" },
-  { href: "/apps/promptly/privacy", label: "Privacy Policy" },
-  { href: "/apps/promptly/cookies", label: "Cookie Policy" },
-  { href: "/apps/promptly/ai-disclaimer", label: "AI Disclaimer" },
-  { href: "/apps/promptly/acceptable-use", label: "Acceptable Use Policy" },
-  { href: "/apps/promptly/contact", label: "Contact" },
+/** Footer / cross-links for Lumenix (paths under /apps/lumenix/…). */
+export const lumenixLegalRoutes = [
+  { href: "/apps/lumenix/terms", label: "Terms of Service" },
+  { href: "/apps/lumenix/privacy", label: "Privacy Policy" },
+  { href: "/apps/lumenix/cookies", label: "Cookie Policy" },
+  { href: "/apps/lumenix/ai-disclaimer", label: "AI Disclaimer" },
+  { href: "/apps/lumenix/acceptable-use", label: "Acceptable Use Policy" },
+  { href: "/apps/lumenix/contact", label: "Contact" },
 ] as const;

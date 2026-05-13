@@ -9,38 +9,38 @@ import {
 } from "../legal/cena-labs-pack";
 import { createApp } from "./defaults";
 
-export const promptly: App = createApp({
-  slug:     "promptly",
-  name:     "Promptly",
+export const lumenix: App = createApp({
+  slug:     "lumenix",
+  name:     "Lumenix",
   tagline:  "Structured AI education built for the real world.",
   headline: "Master modern AI — from first prompts to real workflows.",
   subheadline:
-    "Promptly is an AI learning platform that teaches you how to actually use modern AI tools, build workflows, create apps, automate tasks, and think like an AI-native creator or entrepreneur.",
+    "Lumenix is an AI learning platform that teaches you how to actually use modern AI tools, build workflows, create apps, automate tasks, and think like an AI-native creator or entrepreneur.",
   summary:
     "Structured AI education on iOS — lessons, challenges, streaks, and projects from prompting basics to agents, automations, and real-world workflows.",
   description:
-    "Promptly is an AI learning app for iOS 16+ that teaches practical mastery of modern AI tools — ChatGPT, Claude, Gemini, and more — through short lessons, interactive challenges, XP and streaks, and project-based learning for productivity, business, coding, design, and content creation.",
+    "Lumenix is an AI learning app for iOS 16+ that teaches practical mastery of modern AI tools — ChatGPT, Claude, Gemini, and more — through short lessons, interactive challenges, XP and streaks, and project-based learning for productivity, business, coding, design, and content creation.",
   status:        "beta",
   platforms:     ["ios"],
   featured:      false,
   accent:        "#22d3ee",
-  iconImage:     "/images/promptly-icon.png",
+  iconImage:     "/images/lumenix-icon.png",
   category:      "Education",
 
   pageCopy: {
     howItWorks: {
       heading: "From AI beginner to AI builder in four steps.",
       lead:
-        "Promptly is built around fast lessons, practical projects, and constant progression.",
+        "Lumenix is built around fast lessons, practical projects, and constant progression.",
     },
     features: {
       line1: "Everything needed to become AI-native.",
       line2: "Nothing bloated.",
     },
     mistakes: {
-      heading: "Learning mistakes Promptly helps users avoid",
+      heading: "Learning mistakes Lumenix helps users avoid",
       lead:
-        "Small habits can slow you down as AI tools evolve. Here is what Promptly is designed to help you fix early.",
+        "Small habits can slow you down as AI tools evolve. Here is what Lumenix is designed to help you fix early.",
     },
     tips: {
       heading: "How to improve faster with AI",
@@ -48,7 +48,7 @@ export const promptly: App = createApp({
   },
 
   whatItDoes:
-    "Most people only use AI at surface level. Promptly is a guided path—short lessons, checkpoints, streaks, XP, and hands-on projects—that takes you from basics to real builds: picking the right models (e.g. ChatGPT, Claude, Gemini), prompting well, agents and automations, and applying AI across business, coding, design, productivity, and content. You level up by finishing challenges and projects—not by doom-scrolling tutorials.",
+    "Most people only use AI at surface level. Lumenix is a guided path—short lessons, checkpoints, streaks, XP, and hands-on projects—that takes you from basics to real builds: picking the right models (e.g. ChatGPT, Claude, Gemini), prompting well, agents and automations, and applying AI across business, coding, design, productivity, and content. You level up by finishing challenges and projects—not by doom-scrolling tutorials.",
 
   highlights: [
     { label: "Free lessons to start",              icon: "✦" },
@@ -84,28 +84,28 @@ export const promptly: App = createApp({
   screenshots: [
     {
       src: "",
-      alt: "Promptly home screen concept — daily lessons, streaks, XP, and learning paths",
+      alt: "Lumenix home screen concept — daily lessons, streaks, XP, and learning paths",
       caption:     "Home — your AI learning hub",
       subcaption:
         "Clean modern interface with daily lessons, streak tracking, XP progression, recommended paths, and active projects. Jump into quick sessions or continue long-form learning tracks.",
     },
     {
       src: "",
-      alt: "Promptly courses screen concept — structured lesson maps and checkpoints",
+      alt: "Lumenix courses screen concept — structured lesson maps and checkpoints",
       caption:     "Courses — structured AI mastery",
       subcaption:
         "Interactive lesson maps with clear progression. Complete checkpoints, quizzes, and projects to unlock more advanced AI topics.",
     },
     {
       src: "",
-      alt: "Promptly projects screen concept — hands-on builds and exercises",
+      alt: "Lumenix projects screen concept — hands-on builds and exercises",
       caption:     "Projects — learn by building",
       subcaption:
         "Hands-on exercises where you create prompts, workflows, automations, AI tools, and mini apps instead of just reading theory.",
     },
     {
       src: "",
-      alt: "Promptly AI companion concept — in-app mentor with feedback",
+      alt: "Lumenix AI companion concept — in-app mentor with feedback",
       caption:     "AI Companion — feedback in real time",
       subcaption:
         "Guidance, corrections, optimization suggestions, and explanations from an in-app AI mentor designed to make learning feel personal and adaptive.",
@@ -172,27 +172,27 @@ export const promptly: App = createApp({
     {
       heading: "Using the wrong AI model",
       body:
-        "Most users treat every AI tool the same. Promptly teaches when to use different models for writing, coding, research, reasoning, visuals, and automation.",
+        "Most users treat every AI tool the same. Lumenix teaches when to use different models for writing, coding, research, reasoning, visuals, and automation.",
     },
     {
       heading: "Writing weak prompts",
       body:
-        "Small prompt changes massively affect output quality. Promptly teaches structure, context framing, iteration, and workflow thinking.",
+        "Small prompt changes massively affect output quality. Lumenix teaches structure, context framing, iteration, and workflow thinking.",
     },
     {
       heading: "Consuming without practicing",
       body:
-        "Watching AI content is not the same as building. Promptly focuses heavily on projects, exercises, and repetition.",
+        "Watching AI content is not the same as building. Lumenix focuses heavily on projects, exercises, and repetition.",
     },
     {
       heading: "Trying advanced workflows too early",
       body:
-        "Many beginners jump straight into agents and automation without understanding fundamentals. Promptly builds progression intentionally.",
+        "Many beginners jump straight into agents and automation without understanding fundamentals. Lumenix builds progression intentionally.",
     },
     {
       heading: "Falling behind as AI evolves",
       body:
-        "AI changes fast. Promptly is designed as a living platform that continuously expands with new tools, workflows, and best practices.",
+        "AI changes fast. Lumenix is designed as a living platform that continuously expands with new tools, workflows, and best practices.",
     },
   ],
 
@@ -200,12 +200,12 @@ export const promptly: App = createApp({
     {
       heading: "Build projects while learning",
       body:
-        "The fastest way to improve is creating real systems — not memorizing terminology. Promptly pushes users toward execution from day one.",
+        "The fastest way to improve is creating real systems — not memorizing terminology. Lumenix pushes users toward execution from day one.",
     },
     {
       heading: "Compare outputs between models",
       body:
-        "Understanding why one model performs better than another is a major skill advantage. Promptly trains this directly.",
+        "Understanding why one model performs better than another is a major skill advantage. Lumenix trains this directly.",
     },
     {
       heading: "Focus on workflows, not single prompts",
@@ -223,10 +223,10 @@ export const promptly: App = createApp({
 
   ctaTitle: "Learn AI with direction.",
   ctaBody:
-    "Promptly turns AI education into an interactive progression system — helping users move from confusion to real capability through lessons, projects, and hands-on practice.",
+    "Lumenix turns AI education into an interactive progression system — helping users move from confusion to real capability through lessons, projects, and hands-on practice.",
 
   seo: {
-    title: "Promptly — Structured AI Learning for the Real World",
+    title: "Lumenix — Structured AI Learning for the Real World",
     description:
       "Learn practical AI on iOS: prompting, models, agents, automations, and projects — with lessons, XP, and streaks. iOS 16+, rated 12+.",
     keywords: [
@@ -239,18 +239,18 @@ export const promptly: App = createApp({
       "structured AI lessons",
       "AI workflow builder",
       "AI agents learning",
-      "Promptly app",
+      "Lumenix app",
     ],
-    ogImage: "/images/promptly-icon.png",
+    ogImage: "/images/lumenix-icon.png",
   },
 
   faq: [
     {
-      q: "What is Promptly?",
-      a: "Promptly is an AI learning platform for iOS that teaches you how to use modern AI tools in the real world — not just theory. You get structured paths, short lessons, hands-on challenges, projects, streaks, and XP so skills compound over time.",
+      q: "What is Lumenix?",
+      a: "Lumenix is an AI learning platform for iOS that teaches you how to use modern AI tools in the real world — not just theory. You get structured paths, short lessons, hands-on challenges, projects, streaks, and XP so skills compound over time.",
     },
     {
-      q: "Is Promptly beginner friendly?",
+      q: "Is Lumenix beginner friendly?",
       a: "Yes. Paths start with approachable concepts (models, prompting basics, tool landscape) and grow into advanced workflows, automation, and building. Progression is intentional so you are not thrown into agents or complex stacks before you are ready.",
     },
     {
@@ -271,10 +271,10 @@ export const promptly: App = createApp({
     },
     {
       q: "How often is content updated?",
-      a: "Promptly is built as a living platform: new lessons, tools, workflows, and best practices are added as the AI landscape evolves.",
+      a: "Lumenix is built as a living platform: new lessons, tools, workflows, and best practices are added as the AI landscape evolves.",
     },
     {
-      q: "Who is Promptly built for?",
+      q: "Who is Lumenix built for?",
       a: "Beginners who want clarity, students and professionals levelling up skills, creators and entrepreneurs shipping faster, and anyone who wants to become an AI-native builder — not just a casual user.",
     },
   ],
