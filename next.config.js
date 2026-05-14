@@ -10,12 +10,22 @@ const nextConfig = {
     return [
       {
         source: "/apps/promptly",
-        destination: "/apps/lumenix",
+        destination: "/apps/prompted",
         permanent: true,
       },
       {
         source: "/apps/promptly/:path*",
-        destination: "/apps/lumenix/:path*",
+        destination: "/apps/prompted/:path*",
+        permanent: true,
+      },
+      {
+        source: "/apps/lumenix",
+        destination: "/apps/prompted",
+        permanent: true,
+      },
+      {
+        source: "/apps/lumenix/:path*",
+        destination: "/apps/prompted/:path*",
         permanent: true,
       },
     ];

@@ -1,10 +1,10 @@
 import type { App } from "../types";
-import { lumenixLegalRoutes } from "./cena-labs-pack";
+import { promptedLegalRoutes } from "./cena-labs-pack";
 
 /** Cross-links for an app’s legal hub (used in footers and legal page sidebars). */
 export function appLegalNavEntries(app: App): { href: string; label: string }[] {
-  if (app.slug === "lumenix") {
-    return [...lumenixLegalRoutes];
+  if (app.slug === "prompted") {
+    return [...promptedLegalRoutes];
   }
 
   const entries: { href: string; label: string }[] = [

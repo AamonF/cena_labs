@@ -1,5 +1,5 @@
 import type { App } from "../types";
-import { lumenix } from "./lumenix";
+import { prompted } from "./prompted";
 import { unfumbled } from "./unfumbled";
 
 /**
@@ -32,7 +32,7 @@ import { unfumbled } from "./unfumbled";
  *
  * Order in the array controls display order across the site.
  */
-export const apps: App[] = [unfumbled, lumenix];
+export const apps: App[] = [unfumbled, prompted];
 
 export function getAllApps(): App[] {
   return apps;

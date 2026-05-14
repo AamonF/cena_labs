@@ -67,7 +67,7 @@ const CONFETTI_COLORS = [
 ];
 
 /* ─── Auth flow constants ────────────────────────────────────────── */
-const APP_CALLBACK_DEEP_LINK = "lumenix://auth/callback";
+const APP_CALLBACK_DEEP_LINK = "prompted://auth/callback";
 const APPS_URL = "https://www.cenalabs.com/apps";
 
 /* ─── Component ──────────────────────────────────────────────────── */
@@ -308,7 +308,7 @@ export function ConfirmedPage() {
           >
             <Image
               src="/images/celebrate-mascot.png"
-              alt="Lumenix mascot celebrating your email verification"
+              alt="Prompted mascot celebrating your email verification"
               width={148}
               height={148}
               priority
@@ -452,7 +452,7 @@ function AuthenticatedContent({ onOpenApp }: { onOpenApp: () => void }) {
         variants={itemVariant}
         className="text-[15px] leading-[1.6] text-[#9EB4D8] text-balance"
       >
-        Your account is ready. You can return to Lumenix and sign in.
+        Your account is ready. You can return to Prompted and sign in.
       </motion.p>
 
       {/* Divider */}
@@ -465,7 +465,7 @@ function AuthenticatedContent({ onOpenApp }: { onOpenApp: () => void }) {
         }}
       />
 
-      {/* Primary CTA — open Lumenix app */}
+      {/* Primary CTA — open Prompted app */}
       <motion.div variants={itemVariant} className="w-full">
         <button
           type="button"
@@ -498,7 +498,7 @@ function AuthenticatedContent({ onOpenApp }: { onOpenApp: () => void }) {
           />
 
           <span className="relative text-center text-pretty">
-            Open Lumenix
+            Open Prompted
           </span>
           <svg
             className="relative h-4 w-4 shrink-0 transition-transform duration-300 group-hover:translate-x-0.5"

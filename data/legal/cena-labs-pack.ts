@@ -670,12 +670,12 @@ Moderation decisions may be made automatically or manually.`,
   ],
 };
 
-/** Footer / cross-links for Lumenix (paths under /apps/lumenix/…). */
-export const lumenixLegalRoutes = [
-  { href: "/apps/lumenix/terms", label: "Terms of Service" },
-  { href: "/apps/lumenix/privacy", label: "Privacy Policy" },
-  { href: "/apps/lumenix/cookies", label: "Cookie Policy" },
-  { href: "/apps/lumenix/ai-disclaimer", label: "AI Disclaimer" },
-  { href: "/apps/lumenix/acceptable-use", label: "Acceptable Use Policy" },
-  { href: "/apps/lumenix/contact", label: "Contact" },
+/** Footer / cross-links for Prompted (paths under /apps/prompted/…). */
+export const promptedLegalRoutes = [
+  { href: "/apps/prompted/terms", label: "Terms of Service" },
+  { href: "/apps/prompted/privacy", label: "Privacy Policy" },
+  { href: "/apps/prompted/cookies", label: "Cookie Policy" },
+  { href: "/apps/prompted/ai-disclaimer", label: "AI Disclaimer" },
+  { href: "/apps/prompted/acceptable-use", label: "Acceptable Use Policy" },
+  { href: "/apps/prompted/contact", label: "Contact" },
 ] as const;
