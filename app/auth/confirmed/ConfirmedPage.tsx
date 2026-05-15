@@ -307,15 +307,25 @@ export function ConfirmedPage() {
             }}
           >
             <Image
-              src="/images/celebrate-mascot.png"
-              alt="Prompted mascot celebrating your email verification"
-              width={148}
-              height={148}
+              src={
+                phase === "error"
+                  ? "/images/email-verification-error.png"
+                  : "/images/email-verification-success.png"
+              }
+              alt={
+                phase === "error"
+                  ? "Illustration for unsuccessful email verification"
+                  : "Congratulations — your email was verified"
+              }
+              width={160}
+              height={160}
               priority
               className="select-none"
               style={{
                 filter:
-                  "drop-shadow(0 0 28px rgba(124,58,237,0.55)) drop-shadow(0 8px 24px rgba(0,0,0,0.6))",
+                  phase === "error"
+                    ? "drop-shadow(0 8px 24px rgba(0,0,0,0.65))"
+                    : "drop-shadow(0 0 28px rgba(124,58,237,0.55)) drop-shadow(0 8px 24px rgba(0,0,0,0.6))",
               }}
             />
           </motion.div>
