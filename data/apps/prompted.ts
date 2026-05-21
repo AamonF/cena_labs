@@ -5,8 +5,8 @@ import {
   cenaLabsContactPolicy,
   cenaLabsCookies,
   cenaLabsPrivacy,
-  cenaLabsTerms,
 } from "../legal/cena-labs-pack";
+import { promptedTerms } from "../legal/prompted-global";
 import { createApp } from "./defaults";
 
 export const prompted: App = createApp({
@@ -279,7 +279,7 @@ export const prompted: App = createApp({
     },
   ],
 
-  terms:           cenaLabsTerms,
+  terms:           promptedTerms,
   privacy:         cenaLabsPrivacy,
   aiDisclaimer:    cenaLabsAiDisclaimer,
   cookies:         cenaLabsCookies,
