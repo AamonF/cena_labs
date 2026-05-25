@@ -12,6 +12,8 @@ export type AppScreenshot = {
   alt: string;
   caption?: string;
   subcaption?: string;
+  /** "promo" = full marketing card; default "phone" = cropped phone mockup */
+  variant?: "phone" | "promo";
 };
 
 export type AppLink = {

@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
+import { PROMPTED_APP_STORE_URL } from "@/data/apps/prompted";
 import { devLog } from "@/lib/auth/devLog";
 import {
   describeAuthParams,
@@ -67,7 +68,6 @@ const CONFETTI_COLORS = [
 ];
 
 /* ─── Auth flow constants ────────────────────────────────────────── */
-const APP_CALLBACK_DEEP_LINK = "prompted://auth/callback";
 const APPS_URL = "https://www.cenalabs.com/apps";
 
 /* ─── Component ──────────────────────────────────────────────────── */
@@ -127,11 +127,6 @@ export function ConfirmedPage() {
       setPhase("authenticated");
     }
   }, []);
-
-  const handleOpenApp = () => {
-    devLog("[confirmed] opening app");
-    window.location.href = APP_CALLBACK_DEEP_LINK;
-  };
 
   return (
     <div className="relative flex min-h-[calc(100vh-60px)] items-center justify-center overflow-hidden bg-[#0B1020] px-4 py-16 md:py-20">
@@ -361,10 +356,7 @@ export function ConfirmedPage() {
               )}
 
               {phase === "authenticated" && (
-                <AuthenticatedContent
-                  key="authenticated"
-                  onOpenApp={handleOpenApp}
-                />
+                <AuthenticatedContent key="authenticated" />
               )}
 
               {phase === "error" && (
@@ -416,7 +408,7 @@ function LoadingContent() {
 }
 
 /* ─── Phase: authenticated ───────────────────────────────────────── */
-function AuthenticatedContent({ onOpenApp }: { onOpenApp: () => void }) {
+function AuthenticatedContent() {
   return (
     <motion.div
       key="authenticated"
@@ -475,11 +467,12 @@ function AuthenticatedContent({ onOpenApp }: { onOpenApp: () => void }) {
         }}
       />
 
-      {/* Primary CTA — open Prompted app */}
+      {/* Primary CTA — App Store */}
       <motion.div variants={itemVariant} className="w-full">
-        <button
-          type="button"
-          onClick={onOpenApp}
+        <a
+          href={PROMPTED_APP_STORE_URL}
+          target="_blank"
+          rel="noopener noreferrer"
           className="group relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-2xl px-5 py-[14px] text-[14px] font-semibold leading-snug text-white transition-transform duration-200 hover:scale-[1.025] active:scale-[0.975] sm:text-[15px]"
           style={{
             background:
@@ -508,7 +501,7 @@ function AuthenticatedContent({ onOpenApp }: { onOpenApp: () => void }) {
           />
 
           <span className="relative text-center text-pretty">
-            Open Prompted
+            Return to Prompted
           </span>
           <svg
             className="relative h-4 w-4 shrink-0 transition-transform duration-300 group-hover:translate-x-0.5"
@@ -524,7 +517,7 @@ function AuthenticatedContent({ onOpenApp }: { onOpenApp: () => void }) {
               d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"
             />
           </svg>
-        </button>
+        </a>
       </motion.div>
 
       {/* Secondary link */}

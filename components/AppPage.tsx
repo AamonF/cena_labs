@@ -218,18 +218,35 @@ function Screenshots({ app }: { app: App }) {
         </div>
 
         <div className="grid gap-6 sm:grid-cols-3">
-          {app.screenshots.map((s, i) => (
+          {app.screenshots.map((s, i) => {
+            const isPromo = s.variant === "promo";
+            return (
             <figure key={i} className="group flex flex-col">
-              {/* Phone mockup */}
-              <div className="relative mx-auto w-full max-w-[240px] overflow-hidden rounded-[2.5rem] shadow-lg ring-1 ring-inset ring-white/[0.10] sm:max-w-full">
+              <div
+                className={
+                  isPromo
+                    ? "relative mx-auto w-full overflow-hidden rounded-2xl shadow-lg ring-1 ring-inset ring-white/[0.10]"
+                    : "relative mx-auto w-full max-w-[240px] overflow-hidden rounded-[2.5rem] shadow-lg ring-1 ring-inset ring-white/[0.10] sm:max-w-full"
+                }
+              >
                 {s.src ? (
-                  <div className="relative aspect-[390/844] w-full bg-black">
+                  <div
+                    className={
+                      isPromo
+                        ? "relative aspect-[473/1024] w-full bg-[#0B1020]"
+                        : "relative aspect-[390/844] w-full bg-black"
+                    }
+                  >
                     <Image
                       src={s.src}
                       alt={s.alt}
                       fill
-                      className="object-cover object-top"
-                      sizes="(max-width: 640px) 240px, 33vw"
+                      className={
+                        isPromo
+                          ? "object-contain"
+                          : "object-cover object-top"
+                      }
+                      sizes="(max-width: 640px) 100vw, 33vw"
                     />
                   </div>
                 ) : (
@@ -281,7 +298,8 @@ function Screenshots({ app }: { app: App }) {
                 )}
               </figcaption>
             </figure>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>

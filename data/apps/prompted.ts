@@ -9,6 +9,9 @@ import {
 import { promptedTerms } from "../legal/prompted-global";
 import { createApp } from "./defaults";
 
+export const PROMPTED_APP_STORE_URL =
+  "https://apps.apple.com/us/app/prompted-ai/id6769226494";
+
 export const prompted: App = createApp({
   slug:     "prompted",
   name:     "Prompted",
@@ -20,7 +23,7 @@ export const prompted: App = createApp({
     "Structured AI education on iOS — lessons, challenges, streaks, and projects from prompting basics to agents, automations, and real-world workflows.",
   description:
     "Prompted is an AI learning app for iOS 16+ that teaches practical mastery of modern AI tools — ChatGPT, Claude, Gemini, and more — through short lessons, interactive challenges, XP and streaks, and project-based learning for productivity, business, coding, design, and content creation.",
-  status:        "beta",
+  status:        "live",
   platforms:     ["ios"],
   featured:      false,
   accent:        "#22d3ee",
@@ -83,32 +86,28 @@ export const prompted: App = createApp({
 
   screenshots: [
     {
-      src: "",
-      alt: "Prompted home screen concept — daily lessons, streaks, XP, and learning paths",
-      caption:     "Home — your AI learning hub",
+      src: "/images/prompted-quick-look-learn.png",
+      variant: "promo",
+      alt: "Prompted Learn tab — structured AI Foundations units with bite-sized lessons and progression",
+      caption: "Learn — from the ground up",
       subcaption:
-        "Clean modern interface with daily lessons, streak tracking, XP progression, recommended paths, and active projects. Jump into quick sessions or continue long-form learning tracks.",
+        "Follow structured units like AI Foundations with short, interactive lessons that demystify what AI is, how models work, and how to think like an AI-native builder.",
     },
     {
-      src: "",
-      alt: "Prompted courses screen concept — structured lesson maps and checkpoints",
-      caption:     "Courses — structured AI mastery",
+      src: "/images/prompted-quick-look-practice.png",
+      variant: "promo",
+      alt: "Prompted Prompt Lab — write prompts, get scored feedback, and browse a template library",
+      caption: "Practice — sharpen your prompting",
       subcaption:
-        "Interactive lesson maps with clear progression. Complete checkpoints, quizzes, and projects to unlock more advanced AI topics.",
+        "Drop a prompt into the Prompt Lab and Lumi scores it, explains what works, and shows you how to make it stronger. Try examples or browse ready-to-use templates.",
     },
     {
-      src: "",
-      alt: "Prompted projects screen concept — hands-on builds and exercises",
-      caption:     "Projects — learn by building",
+      src: "/images/prompted-quick-look-projects.png",
+      variant: "promo",
+      alt: "Prompted Projects — hands-on builds with XP, achievements, and Lumi review",
+      caption: "Projects — build real things",
       subcaption:
-        "Hands-on exercises where you create prompts, workflows, automations, AI tools, and mini apps instead of just reading theory.",
-    },
-    {
-      src: "",
-      alt: "Prompted AI companion concept — in-app mentor with feedback",
-      caption:     "AI Companion — feedback in real time",
-      subcaption:
-        "Guidance, corrections, optimization suggestions, and explanations from an in-app AI mentor designed to make learning feel personal and adaptive.",
+        "Apply what you learn with portfolio-worthy projects across productivity and learning tracks. Earn XP, unlock achievements, and get feedback when you submit.",
     },
   ],
 
@@ -219,7 +218,14 @@ export const prompted: App = createApp({
     },
   ],
 
-  links: [],
+  links: [
+    {
+      label: "Download on the App Store",
+      href:  PROMPTED_APP_STORE_URL,
+      kind:  "store",
+      note:  "Free on iOS · iOS 16+, rated 12+",
+    },
+  ],
 
   ctaTitle: "Learn AI with direction.",
   ctaBody:
