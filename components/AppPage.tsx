@@ -225,7 +225,7 @@ function Screenshots({ app }: { app: App }) {
               <div
                 className={
                   isPromo
-                    ? "relative mx-auto w-full overflow-hidden rounded-2xl shadow-lg ring-1 ring-inset ring-white/[0.10]"
+                    ? "relative mx-auto w-full max-w-[200px] overflow-hidden rounded-2xl shadow-lg ring-1 ring-inset ring-white/[0.10] sm:max-w-[220px] lg:max-w-[240px]"
                     : "relative mx-auto w-full max-w-[240px] overflow-hidden rounded-[2.5rem] shadow-lg ring-1 ring-inset ring-white/[0.10] sm:max-w-full"
                 }
               >
@@ -246,7 +246,11 @@ function Screenshots({ app }: { app: App }) {
                           ? "object-contain"
                           : "object-cover object-top"
                       }
-                      sizes="(max-width: 640px) 100vw, 33vw"
+                      sizes={
+                        isPromo
+                          ? "(max-width: 640px) 200px, 240px"
+                          : "(max-width: 640px) 240px, 33vw"
+                      }
                     />
                   </div>
                 ) : (
